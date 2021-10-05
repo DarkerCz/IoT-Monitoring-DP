@@ -1,0 +1,83 @@
+{% extends "monitoring/index.html" %}
+
+{% load i18n %}
+
+{% block content %}
+    <!-- NADPIS -->
+    <div class="container-fluid" id="container-wrapper">
+        <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800">{% trans "Brány" %}</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header py-3 justify-content-between">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <h6 class="m-0 font-weight-bold text-primary">{% trans "Seznam bran" %}</h6>
+                        </div>
+                        <div class="col-lg-6 pull-right">
+                            <a href="{% url 'monitoring:gateway-create' %}" class='btn btn-sm btn-success'><i class="fas fa-plus"></i>&nbsp;{% trans "Přidat" %}</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive p-3">
+                    <table class="table align-items-center table-flush" id="brany-dataTable">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>{% trans "Název" %}</th>
+                            <th>{% trans "EUI" %}</th>
+                            <th>{% trans "IP adresa" %}</th>
+                            <th>{% trans "Povolena" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for gateway in gateways %}
+                            <tr>
+                                <td>{{ gateway.nazev }}&nbsp;<a href="{% url 'monitoring:gateway-edit' gateway.pk %}"><i class="far fa-edit"></i></a></td>
+                                <td>{{ gateway.eui }}</td>
+                                <td>{{ gateway.ip_adresa }}</td>
+                                <td><span class="badge badge-{{ gateway.povolena|yesno:_("success,danger") }}">{{ gateway.povolena|yesno:_("Povolena,Zakázána") }}</span></td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="4">
+                                    {% trans "Není nastavena žádná brána" %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header py-3 justify-content-between">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <h6 class="m-0 font-weight-bold text-primary">{% trans "Posledních 10 zpráv" %}</h6>
+                        </div>
+                        <div class="col-lg-6 pull-right">
+                            <a href="#" class='btn btn-sm btn-info zpravy-obnovit'><i class="fas fa-sync"></i></i>&nbsp;{% trans "Obnovit" %}</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-body" data-autoload='true' id="zpravy-list" data-content-url="{% url 'monitoring:gateway-zpravy' %}"></div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block js %}
+    <script>
+        $(document).ready(function () {
+            $('#brany-dataTable').DataTable();
+        });
+        $('.zpravy-obnovit').on('click', function(e){
+            e.preventDefault();
+            $('[data-toggle="popover"]').popover('hide');
+            $('#zpravy-list').reloadContent();
+        });
+    </script>
+{% endblock %}

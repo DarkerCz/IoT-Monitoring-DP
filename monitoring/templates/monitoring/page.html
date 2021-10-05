@@ -1,0 +1,119 @@
+{% load static %}
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <title>{% block title %}TITLE{% endblock %}</title>
+  <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon"> 
+  {% block head_css %}
+      <link href='{% static "monitoring/vendor/fontawesome-free/css/all.min.css" %}' rel="stylesheet" type="text/css">
+      <link href='{% static "monitoring/vendor/bootstrap/css/bootstrap.min.css" %}' rel="stylesheet" type="text/css">
+      <link href='{% static "monitoring/css/ruang-admin.min.css" %}' rel="stylesheet">
+      <link href='{% static "monitoring/vendor/datatables/dataTables.bootstrap4.min.css" %}' rel="stylesheet">
+      <link href='{% static "monitoring/css/custom.css" %}' rel="stylesheet">
+  {% endblock %}
+  {% block head_js %}
+  {% endblock %}
+  
+</head>
+
+<body id="page-top">
+  <div id="wrapper">
+    <!-- Sidebar -->
+    {% block sidebar %}
+    <ul class="navbar-nav sidebar sidebar-light accordion" id="accordionSidebar">
+      <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/">
+        <i class="fas fa-broadcast-tower"></i>
+        <div class="sidebar-brand-text mx-3">{% block app_name %}APP_NAME{% endblock %}</div>
+      </a>
+      <hr class="sidebar-divider my-0">
+      {% block menu %}
+      {% endblock %}
+    </ul>
+    {% endblock %}
+    <!-- Sidebar -->
+    <div id="content-wrapper" class="d-flex flex-column">
+      <div id="content">
+        <!-- TopBar -->
+        {% block topbar %}
+            <nav class="navbar navbar-expand navbar-light bg-navbar topbar mb-4 static-top">
+            <button id="sidebarToggleTop" class="btn btn-link rounded-circle mr-3">
+                <i class="fa fa-bars"></i>
+            </button>
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item dropdown no-arrow">
+                <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown"
+                    aria-haspopup="true" aria-expanded="false">
+                    <span class="ml-2 d-none d-lg-inline text-white small">{{ request.user.last_name|upper }} {{ request.user.first_name }}</span>
+                </a>
+                <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="userDropdown">
+                    <a class="dropdown-item" href="{% url 'monitoring:logout' %}">
+                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                    {% trans "Odhlásit" %}
+                    </a>
+                </div>
+                </li>
+            </ul>
+            </nav>
+        {% endblock %}
+        <!-- Topbar -->
+
+        <!-- Container Fluid-->
+        {% block page %}
+            <div class="container-fluid" id="container-wrapper">
+                {% block content %}
+                {% endblock %}
+            </div>
+        {% endblock %}
+        <!---Container Fluid-->
+        </div>
+        <!-- Footer -->
+        {% block footer %}
+            <footer class="sticky-footer bg-white">
+                <div class="container my-auto">
+                <div class="copyright text-center my-auto">
+                    {% trans "developed by" %} <b><a href="http://valdauf.eu/" target="_blank">J. Valdauf</a></b>
+                    </span>
+                </div>
+                </div>
+            </footer>
+        {% endblock %}
+        <!-- Footer -->
+    </div>
+  </div>
+
+  <!-- Scroll to top -->
+  <a class="scroll-to-top rounded" href="#page-top">
+    <i class="fas fa-angle-up"></i>
+  </a>
+  {% block foot_js %}
+  <script src='{% static "monitoring/vendor/jquery/jquery.min.js" %}'></script>
+  <script src='{% static "monitoring/vendor/bootstrap/js/bootstrap.bundle.min.js" %}'></script>
+  <script src='{% static "monitoring/vendor/jquery-easing/jquery.easing.min.js" %}'></script>
+  <script src='{% static "monitoring/js/ruang-admin.min.js" %}'></script>
+  <script src='{% static "monitoring/js/content-loading.js" %}'></script>
+  <script src='{% static "monitoring/vendor/chart.js/Chart.min.js" %}'></script>
+  <script src='{% static "monitoring/vendor/datatables/jquery.dataTables.min.js" %}'></script>
+  <script src='{% static "monitoring/vendor/datatables/dataTables.bootstrap4.min.js" %}'></script>
+  <script>
+      $.extend( true, $.fn.dataTable.defaults, {
+          "searching": false,
+          "ordering": false,
+          "language": {
+            "url": '{% static "monitoring/vendor/datatables/Czech.json" %}'
+          }
+      });
+  </script>
+  {% endblock %}
+  {% block js %}
+  {% endblock %}
+</body>
+
+</html>

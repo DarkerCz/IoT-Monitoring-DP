@@ -1,0 +1,12 @@
+*.pyc
+*.swp
+db.sqlite3
+settings.py
+!.gitignore
+!var/lib
+uwsgi.ini
+uwsgi-touch-reload.txt
+nginx.conf
+supervisord_*.conf
+var/*
+var/lib/beanstalkd/*

@@ -1,0 +1,37 @@
+{% extends "monitoring/page.html" %}
+
+{% load i18n %}
+
+{% block title %}{% trans "IoT monitoring" %}{% endblock %}
+
+{% block app_name %}{% trans "IoT monitoring" %}{% endblock %}
+
+{% block menu %}
+    <li class="nav-item">
+        <a class="nav-link" href="/">
+        <i class="fas fa-fw fa-tachometer-alt"></i>
+        <span>{% trans "Dashboard" %}</span></a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'monitoring:gateway-list' %}">
+        <i class="fas fa-dungeon"></i>
+        <span>{% trans "Brány" %}</span></a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="{% url 'monitoring:zarizeni-list' %}">
+        <i class="fas fa-laptop-medical"></i>
+        <span>{% trans "Zařízení" %}</span></a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/">
+        <i class="fas fa-sms"></i>
+        <span>{% trans "Zabbix" %}</span></a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" href="/">
+        <i class="fas fa-user"></i>
+        <span>{% trans "Uživatelé" %}</span></a>
+    </li>
+    <hr class="sidebar-divider">
+    <div class="version" id="version-ruangadmin" hidden></div>
+{% endblock %}

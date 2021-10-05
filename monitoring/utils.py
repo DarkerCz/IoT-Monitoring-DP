@@ -2,6 +2,7 @@ import json
 import struct
 import base64
 import binascii
+import random
 
 from lora.crypto import loramac_decrypt
 from python_cayennelpp.decoder import decode
@@ -29,6 +30,30 @@ def to_little(val):
     return str_little.upper()
 
 
+def generuj_klic(delka):
+    klic = random.getrandbits(delka)
+    return format(klic, 'x').upper()
+
+
+def generuj_nwkskey():
+    nwkskey = None
+    while not nwkskey:
+        klic = generuj_klic(128)
+        try:
+            models.Zarizeni.objects.get(nwkskey=klic)
+        except models.Zarizeni.DoesNotExist:
+            nwkskey = klic
+            return klic
+
+def generuj_appskey():
+    appskey = None
+    while not appskey:
+        klic = generuj_klic(128)
+        try:
+            models.Zarizeni.objects.get(appskey=klic)
+        except models.Zarizeni.DoesNotExist:
+            appskey = klic
+            return klic
 
 def decryptuj_data(data):
     try:
@@ -58,7 +83,7 @@ def decoduj_cayenne_lpp(data):
         data = binascii.hexlify(data).decode('utf-8')
         return decode(data)
     except Exception as e:
-        logger.error("Chyba pri decodovani cayenne lpp: {}".format(data))
+        logger.error("Chyba při dekódování cayenne lpp: {}".format(data))
         return None
 
 

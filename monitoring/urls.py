@@ -26,4 +26,9 @@ urlpatterns = [
     path('zarizeni/zpravy', views.ZarizeniZpravyListView.as_view(), name='zarizeni-zpravy'),
     path('zarizeni/create', views.ZarizeniCreateView.as_view(), name='zarizeni-create'),
     path('zarizeni/<int:pk>/edit/', views.ZarizeniEditView.as_view(), name='zarizeni-edit'),
+
+    # Uzivatele
+    path('uzivatel/list', views.UzivatelListView.as_view(), name='uzivatel-list'),
+    path('uzivatel/create', views.UzivatelCreateView.as_view(), name='uzivatel-create'),
+    path('uzivatel/<int:pk>/edit/', views.UzivatelEditView.as_view(), name='uzivatel-edit'),
 ]

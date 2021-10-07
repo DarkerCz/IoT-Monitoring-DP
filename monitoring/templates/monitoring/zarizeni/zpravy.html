@@ -1,0 +1,49 @@
+{% load i18n %}
+<style>
+    .fa-arrow-down {
+        color: green;
+    }
+    .fa-arrow-up {
+        color: red;
+    }
+    #brany-dataTable td, #brany-dataTable th {
+        padding: .3rem;
+    }
+</style>
+
+<div class="table-responsive p-3">
+    <table class="table align-items-center table-flush" id="brany-dataTable">
+        <thead class="thead-light">
+            <tr>
+                <th>{% trans "Směr" %}</th>
+                <th>{% trans "Čas" %}</th>
+                <th>{% trans "Brána" %}</th>
+                <th>{% trans "Typ zprávy" %}</th>
+                <th>{% trans "Data" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for zprava in zpravy %}
+                <tr>
+                    <td>{{ zprava.smer }}&nbsp;{% if zprava.smer == 'RX'%}<i class="fas fa-arrow-down"></i>{% else %}<i class="fas fa-arrow-up"></i>{% endif %}</td>
+                    <td>{{ zprava.created|date:'H:i:s' }}</td>
+                    <td>{{ zprava.zarizeni.nazev }}</td>
+                    <td>{{ zprava.get_typ_zpravy_display }}</td>
+                    <td>{{ zprava.payload|default:""|safe|truncatechars:30 }}{% if zprava.payload %}&nbsp;<i class="far fa-comment-dots" data-toggle="popover" data-placement="left" data-trigger="click" data-content="{{ zprava.payload|addslashes }}"></i>{% endif %}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="4">
+                        {% trans "Žádné zprávy" %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+    $(function () {
+        $('[data-toggle="popover"]').popover();
+    });
+</script>

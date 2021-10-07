@@ -5,9 +5,11 @@ from django.views import generic
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import authenticate, login
+from django.contrib.auth.models import User
 from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
 from django.urls import reverse_lazy
 from django.utils.timezone import now
+
 
 from . import models
 from . import forms
@@ -24,7 +26,6 @@ class LoginView(generic.FormView):
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        logger.error("valid")
         username = form.cleaned_data['username']
         heslo = form.cleaned_data['password']
         user = authenticate(username=username, password=heslo)
@@ -87,7 +88,7 @@ class ZarizeniZpravyListView(LoginRequiredMixin, generic.TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update({'zpravy': models.Zprava.objects.all().order_by('-created')[:10]})
+        context.update({'zpravy': models.Zprava.objects.filter(zarizeni__isnull=False).order_by('-created')[:10]})
         return context
 
 # Přidání zařízení
@@ -108,3 +109,35 @@ class ZarizeniEditView(LoginRequiredMixin, generic.UpdateView):
     def get_success_url(self):
         return reverse_lazy('monitoring:zarizeni-list')
     
+
+# Výpis uživatelů
+class UzivatelListView(LoginRequiredMixin, generic.ListView):
+    model = User
+    context_object_name = 'uzivatele'
+    template_name = 'monitoring/uzivatel/list.html'
+
+
+# Přidání uživatele
+class UzivatelCreateView(LoginRequiredMixin, generic.CreateView):
+    model = User
+    form_class = forms.UserForm
+    template_name = 'monitoring/uzivatel/form.html'
+
+    def get_success_url(self):
+        return reverse_lazy('monitoring:uzivatel-list')
+
+    def form_valid(self, form):
+        uzivatel = form.save(commit=False)
+        uzivatel.save()
+        heslo = form.cleaned_data['password']
+        uzivatel.set_password(heslo)
+        uzivatel.save()
+
+# Editace uživatele
+class UzivatelEditView(LoginRequiredMixin, generic.UpdateView):
+    model = User
+    form_class = forms.UserForm
+    template_name = 'monitoring/uzivatel/form.html'
+
+    def get_success_url(self):
+        return reverse_lazy('monitoring:uzivatel-list')

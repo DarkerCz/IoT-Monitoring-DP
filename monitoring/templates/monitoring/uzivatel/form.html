@@ -6,7 +6,7 @@
     <!-- NADPIS -->
     <div class="container-fluid" id="container-wrapper">
         <div class="d-sm-flex align-items-center justify-content-between mb-4">
-            <h1 class="h3 mb-0 text-gray-800">{% trans "Brány" %}</h1>
+            <h1 class="h3 mb-0 text-gray-800">{% trans "Uživatel" %}</h1>
         </div>
     </div>
     <div class="row">
@@ -15,7 +15,7 @@
                 <div class="card-header py-3 justify-content-between">
                     <div class="row">
                         <div class="col-lg-6">
-                            <h6 class="m-0 font-weight-bold text-primary">{% if form.instance.pk %}{% trans "Upravit bránu" %}{% else %}{% trans "Nová brána" %}{% endif %}</h6>
+                            <h6 class="m-0 font-weight-bold text-primary">{% if form.instance.pk %}{% trans "Upravit uživatele" %}{% else %}{% trans "Nový uživatel" %}{% endif %}</h6>
                         </div>
                     </div>
                 </div>
@@ -23,7 +23,7 @@
                     <form 
                         action="#"
                         method="post" 
-                        id="gateway-form" 
+                        id="osoba-form" 
                         role="form" 
                         class="form-horizontal">
                         {{ form.media.css }}

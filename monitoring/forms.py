@@ -4,6 +4,7 @@
 from django import forms
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth import authenticate
+from django.contrib.auth.models import User
 
 from . import models
 
@@ -58,3 +59,22 @@ class ZarizeniForm(forms.ModelForm):
         self.fields['deveui'].required = True
         self.fields['nwkskey'].required = True
         self.fields['appskey'].required = True
+
+
+class UserForm(forms.ModelForm):
+
+    class Meta:
+        model = User
+        fields = ['username', 'first_name', 'last_name', 'password', 'email']    
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['username'].widget.attrs['class'] = 'form-control'
+        self.fields['first_name'].widget.attrs['class'] = 'form-control'
+        self.fields['last_name'].widget.attrs['class'] = 'form-control'
+        self.fields['password'].widget.attrs['class'] = 'form-control'
+        self.fields['password'].widget.type = 'password'
+        self.fields['email'].widget.attrs['class'] = 'form-control'
+        self.fields['username'].required = True
+        self.fields['password'].required = True
+        self.fields['email'].required = True

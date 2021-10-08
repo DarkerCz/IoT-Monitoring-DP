@@ -1,0 +1,54 @@
+{% extends "monitoring/index.html" %}
+
+{% load i18n %}
+
+{% block content %}
+    <!-- NADPIS -->
+    <div class="container-fluid" id="container-wrapper">
+        <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800">{% trans "Zabbix" %}</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="card mb-4">
+                <div class="card-header py-3 justify-content-between">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <h6 class="m-0 font-weight-bold text-primary">{% trans "Seznam zabbixů" %}</h6>
+                        </div>
+                        <div class="col-lg-6 pull-right">
+                            <a href="{% url 'monitoring:zabbix-create' %}" class='btn btn-sm btn-success'><i class="fas fa-plus"></i>&nbsp;{% trans "Přidat" %}</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive p-3">
+                    <table class="table align-items-center table-flush" id="zabbix-dataTable">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>{% trans "Název" %}</th>
+                            <th>{% trans "IP" %}</th>
+                            <th>{% trans "Povolen" %}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for zabbix in vsechny_zabbixy %}
+                            <tr>
+                                <td><a href="{% url 'monitoring:zabbix-detail' zabbix.pk %}" class="href-grey">{{ zabbix.nazev }}</a>&nbsp;<a href="{% url 'monitoring:zabbix-edit' zabbix.pk %}"><i class="far fa-edit"></i></a></td>
+                                <td>{{ zabbix.ip_adresa }}:{{ zabbix.port }}</td>
+                                <td><span class="badge badge-{{ zabbix.povolen|yesno:_("success,danger") }}">{{ zabbix.povolen|yesno:_("Povolen,Zakázán") }}</span></td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="5">
+                                    {% trans "Není nastaven žádný Zabbix" %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

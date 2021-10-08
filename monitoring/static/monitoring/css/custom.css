@@ -1,10 +1,11 @@
 .pull-right{
     text-align: right !important;
 }
-#id_povolena{
+#id_povolena, #id_povoleno, #id_povolen{
     width: auto;
 }
 
-#id_povoleno{
-    width: auto;
+.href-grey{
+    color: #757575;
+    text-decoration: underline;
 }

@@ -6,7 +6,7 @@
     <!-- NADPIS -->
     <div class="container-fluid" id="container-wrapper">
         <div class="d-sm-flex align-items-center justify-content-between mb-4">
-            <h1 class="h3 mb-0 text-gray-800">{% trans "Brány" %}</h1>
+            <h1 class="h3 mb-0 text-gray-800">{% trans "Uživatelé" %}</h1>
         </div>
     </div>
     <div class="row">
@@ -15,7 +15,7 @@
                 <div class="card-header py-3 justify-content-between">
                     <div class="row">
                         <div class="col-lg-6">
-                            <h6 class="m-0 font-weight-bold text-primary">{% trans "Seznam bran" %}</h6>
+                            <h6 class="m-0 font-weight-bold text-primary">{% trans "Seznam uživatelů" %}</h6>
                         </div>
                         <div class="col-lg-6 pull-right">
                             <a href="{% url 'monitoring:uzivatel-create' %}" class='btn btn-sm btn-success'><i class="fas fa-plus"></i>&nbsp;{% trans "Přidat" %}</a>
@@ -23,13 +23,14 @@
                     </div>
                 </div>
                 <div class="table-responsive p-3">
-                    <table class="table align-items-center table-flush" id="brany-dataTable">
+                    <table class="table align-items-center table-flush" id="uzivatele-dataTable">
                     <thead class="thead-light">
                         <tr>
                             <th>{% trans "Uživatelské jméno" %}</th>
                             <th>{% trans "Jméno" %}</th>
                             <th>{% trans "Příjmení" %}</th>
                             <th>{% trans "Email" %}</th>
+                            <th>{% trans "Aktivní" %}</th>
                             <th>{% trans "Poslední přihlášení" %}</th>
                         </tr>
                     </thead>
@@ -40,6 +41,7 @@
                                 <td>{{ uzivatel.first_name }}</td>
                                 <td>{{ uzivatel.last_name }}</td>
                                 <td>{{ uzivatel.email }}</td>
+                                <td><span class="badge badge-{{ uzivatel.is_active|yesno:_("success,danger") }}">{{ uzivatel.is_active|yesno:_("Aktivní,Neaktivní") }}</span></td>
                                 <td>{{ uzivatel.last_login|date:"d.m.Y H:i" }}</td>
                             </tr>
                         {% empty %}

@@ -5,6 +5,7 @@ from django import forms
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm, AdminPasswordChangeForm
 
 from . import models
 
@@ -61,20 +62,59 @@ class ZarizeniForm(forms.ModelForm):
         self.fields['appskey'].required = True
 
 
-class UserForm(forms.ModelForm):
+class UserCreateForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ['username', 'first_name', 'last_name', 'password', 'email']    
+        fields = ['username', 'first_name', 'last_name', 'email', 'is_active']    
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['username'].widget.attrs['class'] = 'form-control'
         self.fields['first_name'].widget.attrs['class'] = 'form-control'
         self.fields['last_name'].widget.attrs['class'] = 'form-control'
-        self.fields['password'].widget.attrs['class'] = 'form-control'
-        self.fields['password'].widget.type = 'password'
+        self.fields['password1'].widget.attrs['class'] = 'form-control'
+        self.fields['password2'].widget.attrs['class'] = 'form-control'
         self.fields['email'].widget.attrs['class'] = 'form-control'
+        self.fields['is_active'].widget.attrs['class'] = 'active'
         self.fields['username'].required = True
-        self.fields['password'].required = True
+        self.fields['password1'].required = True
+        self.fields['password2'].required = True
         self.fields['email'].required = True
+
+class UserChangeForm(UserChangeForm):
+
+    class Meta:
+        model = User
+        fields = ['username', 'first_name', 'last_name', 'email', 'password', 'is_active']   
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['username'].widget.attrs['class'] = 'form-control'
+        self.fields['first_name'].widget.attrs['class'] = 'form-control'
+        self.fields['last_name'].widget.attrs['class'] = 'form-control'
+        self.fields['email'].widget.attrs['class'] = 'form-control'
+        self.fields['password'].widget.attrs['class'] = 'form-control'
+        self.fields['username'].required = True
+        self.fields['email'].required = True
+
+
+class UserPasswordChangeForm(AdminPasswordChangeForm):
+    
+    class Meta:
+        fields = '__all__'
+
+
+class ZabbixForm(forms.ModelForm):
+    
+    class Meta:
+        model = models.Zabbix
+        fields = ['nazev', 'ip_adresa', 'port', 'povolen']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['nazev'].widget.attrs['class'] = 'form-control'
+        self.fields['ip_adresa'].widget.attrs['class'] = 'form-control'
+        self.fields['port'].widget.attrs['class'] = 'form-control'
+        self.fields['povolen'].widget.attrs['class'] = 'form-control'
+        self.fields['nazev'].required = True

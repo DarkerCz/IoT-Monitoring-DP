@@ -10,6 +10,8 @@ from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
 from django.urls import reverse_lazy
 from django.utils.timezone import now
 
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm, AdminPasswordChangeForm
+
 
 from . import models
 from . import forms
@@ -38,6 +40,11 @@ class LoginView(generic.FormView):
 # Dashboard
 class IndexView(LoginRequiredMixin, generic.TemplateView):
     template_name = 'monitoring/index.html'
+
+
+###
+# BRANA
+###
 
 
 # Výpis bran a jejich informací
@@ -74,6 +81,10 @@ class GatewayEditView(LoginRequiredMixin, generic.UpdateView):
     def get_success_url(self):
         return reverse_lazy('monitoring:gateway-list')
 
+###
+# ZARIZENI
+###
+
 
 # Výpis zařízení a jejich informací
 class ZarizeniListView(LoginRequiredMixin, generic.ListView):
@@ -94,7 +105,7 @@ class ZarizeniZpravyListView(LoginRequiredMixin, generic.TemplateView):
 # Přidání zařízení
 class ZarizeniCreateView(LoginRequiredMixin, generic.CreateView):
     model = models.Zarizeni
-    form_class = forms.GatewayForm
+    form_class = forms.ZarizeniForm
     template_name = 'monitoring/zarizeni/form.html'
 
     def get_success_url(self):
@@ -108,36 +119,86 @@ class ZarizeniEditView(LoginRequiredMixin, generic.UpdateView):
 
     def get_success_url(self):
         return reverse_lazy('monitoring:zarizeni-list')
-    
 
+# Detail zařízení
+class ZarizeniDetailView(LoginRequiredMixin, generic.DetailView):
+    model = models.Zarizeni
+    template_name = 'monitoring/zarizeni/detail.html'
+
+###
+# UZIVATEL
+###
+   
 # Výpis uživatelů
 class UzivatelListView(LoginRequiredMixin, generic.ListView):
     model = User
     context_object_name = 'uzivatele'
     template_name = 'monitoring/uzivatel/list.html'
+    ordering = ['-is_active', 'username',]
 
 
 # Přidání uživatele
 class UzivatelCreateView(LoginRequiredMixin, generic.CreateView):
     model = User
-    form_class = forms.UserForm
+    form_class = forms.UserCreateForm
     template_name = 'monitoring/uzivatel/form.html'
 
     def get_success_url(self):
         return reverse_lazy('monitoring:uzivatel-list')
-
-    def form_valid(self, form):
-        uzivatel = form.save(commit=False)
-        uzivatel.save()
-        heslo = form.cleaned_data['password']
-        uzivatel.set_password(heslo)
-        uzivatel.save()
 
 # Editace uživatele
 class UzivatelEditView(LoginRequiredMixin, generic.UpdateView):
     model = User
-    form_class = forms.UserForm
+    form_class = forms.UserChangeForm
     template_name = 'monitoring/uzivatel/form.html'
 
     def get_success_url(self):
         return reverse_lazy('monitoring:uzivatel-list')
+
+
+# Nastavení hesla uživatele
+class UzivatelHesloView(LoginRequiredMixin, generic.UpdateView):
+    model = User
+    form_class = AdminPasswordChangeForm
+    template_name = 'monitoring/uzivatel/heslo.html'
+
+    def get_success_url(self):
+        return reverse_lazy('monitoring:uzivatel-list')
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.get_object()
+        return kwargs
+###
+# ZABBIX
+###
+
+# Výpis zabbixu a jejich informací
+class ZabbixListView(LoginRequiredMixin, generic.ListView):
+    model = models.Zabbix
+    context_object_name = 'vsechny_zabbixy'
+    template_name = 'monitoring/zabbix/list.html'
+
+
+# Přidání zabbixu
+class ZabbixCreateView(LoginRequiredMixin, generic.CreateView):
+    model = models.Zabbix
+    form_class = forms.ZabbixForm
+    template_name = 'monitoring/zabbix/form.html'
+
+    def get_success_url(self):
+        return reverse_lazy('monitoring:zabbix-list')
+
+# Editace zabbixu
+class ZabbixEditView(LoginRequiredMixin, generic.UpdateView):
+    model = models.Zabbix
+    form_class = forms.ZabbixForm
+    template_name = 'monitoring/zabbix/form.html'
+
+    def get_success_url(self):
+        return reverse_lazy('monitoring:zabbix-list')
+
+# Detail zabbixu
+class ZabbixDetailView(LoginRequiredMixin, generic.DetailView):
+    model = models.Zabbix
+    template_name = 'monitoring/zabbix/detail.html'

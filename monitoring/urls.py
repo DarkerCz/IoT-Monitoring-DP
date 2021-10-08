@@ -26,9 +26,17 @@ urlpatterns = [
     path('zarizeni/zpravy', views.ZarizeniZpravyListView.as_view(), name='zarizeni-zpravy'),
     path('zarizeni/create', views.ZarizeniCreateView.as_view(), name='zarizeni-create'),
     path('zarizeni/<int:pk>/edit/', views.ZarizeniEditView.as_view(), name='zarizeni-edit'),
+    path('zarizeni/<int:pk>/detail/', views.ZarizeniDetailView.as_view(), name='zarizeni-detail'),
 
     # Uzivatele
     path('uzivatel/list', views.UzivatelListView.as_view(), name='uzivatel-list'),
     path('uzivatel/create', views.UzivatelCreateView.as_view(), name='uzivatel-create'),
     path('uzivatel/<int:pk>/edit/', views.UzivatelEditView.as_view(), name='uzivatel-edit'),
+    path('uzivatel/<int:pk>/password/', views.UzivatelHesloView.as_view(), name='uzivatel-heslo'),
+
+    # Zabbix
+    path('zabbix/list', views.ZabbixListView.as_view(), name='zabbix-list'),
+    path('zabbix/create', views.ZabbixCreateView.as_view(), name='zabbix-create'),
+    path('zabbix/<int:pk>/edit/', views.ZabbixEditView.as_view(), name='zabbix-edit'),
+    path('zabbix/<int:pk>/detail/', views.ZabbixDetailView.as_view(), name='zabbix-detail'),
 ]

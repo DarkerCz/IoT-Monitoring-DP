@@ -35,7 +35,7 @@
                     <tbody>
                         {% for zarizeni in vsechna_zarizeni %}
                             <tr>
-                                <td>{{ zarizeni.nazev }}&nbsp;<a href="{% url 'monitoring:zarizeni-edit' zarizeni.pk %}"><i class="far fa-edit"></i></a></td>
+                                <td><a href="{% url 'monitoring:zarizeni-detail' zarizeni.pk %}" class="href-grey">{{ zarizeni.nazev }}</a>&nbsp;<a href="{% url 'monitoring:zarizeni-edit' zarizeni.pk %}"><i class="far fa-edit"></i></a></td>
                                 <td>{{ zarizeni.deveui }}</td>
                                 <td>{{ zarizeni.devaddr }}</td>
                                 <td><span class="badge badge-{{ zarizeni.povoleno|yesno:_("success,danger") }}">{{ zarizeni.povoleno|yesno:_("Povoleno,Zakázáno") }}</span></td>

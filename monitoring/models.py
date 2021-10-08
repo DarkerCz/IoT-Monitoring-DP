@@ -16,7 +16,8 @@ from django_extensions.db.models import TimeStampedModel
 from django.dispatch import receiver
 from django.db.models.signals import pre_save, post_save
 
-from lora.crypto import loramac_decrypt
+from django.core.validators import MaxValueValidator, MinValueValidator
+
 
 
 from . import utils
@@ -195,3 +196,22 @@ class Data(TimeStampedModel):
         verbose_name = 'Data'
         verbose_name_plural = 'Data'
         ordering = ('-created',)
+
+
+
+class Zabbix(TimeStampedModel):
+
+    zarizeni = models.ManyToManyField(Zarizeni, related_name='zarizeni')
+
+    uuid = models.UUIDField(unique=True, default=uuid4, editable=False)
+
+    nazev = models.CharField('Název', max_length=128, blank=True, null=True)
+    ip_adresa = models.CharField('IP adresa', max_length=14)
+    port = models.PositiveIntegerField('Port', default="10051", validators=[MinValueValidator(0), MaxValueValidator(65535)])
+    povolen = models.BooleanField('Povolen', default=True)
+
+    class Meta:
+        verbose_name = 'Zabbix'
+        verbose_name_plural = 'Zabbix'
+        ordering = ('-created',)
+

@@ -6,6 +6,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
+from django.shortcuts import get_object_or_404
 from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
 from django.urls import reverse_lazy
 from django.utils.timezone import now
@@ -15,6 +16,7 @@ from django.contrib.auth.forms import UserCreationForm, UserChangeForm, AdminPas
 
 from . import models
 from . import forms
+from . import utils
 
 import logging
 logger = logging.getLogger(__name__)
@@ -99,7 +101,7 @@ class ZarizeniZpravyListView(LoginRequiredMixin, generic.TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update({'zpravy': models.Zprava.objects.filter(zarizeni__isnull=False).order_by('-created')[:10]})
+        context.update({'zpravy': models.Zprava.objects.filter(data_hodnoty__isnull=False).order_by('-created').distinct()[:10]})
         return context
 
 # Přidání zařízení
@@ -110,6 +112,15 @@ class ZarizeniCreateView(LoginRequiredMixin, generic.CreateView):
 
     def get_success_url(self):
         return reverse_lazy('monitoring:zarizeni-list')
+
+    def get_initial(self):
+        initial = super().get_initial()
+        initial.update({
+            'deveui': utils.generuj_deveui(),
+            'nwkskey': utils.generuj_nwkskey(), 
+            'appskey': utils.generuj_appskey(),
+        })
+        return initial
 
 # Editace zařízení
 class ZarizeniEditView(LoginRequiredMixin, generic.UpdateView):
@@ -157,18 +168,29 @@ class UzivatelEditView(LoginRequiredMixin, generic.UpdateView):
 
 
 # Nastavení hesla uživatele
-class UzivatelHesloView(LoginRequiredMixin, generic.UpdateView):
-    model = User
+class UzivatelHesloView(LoginRequiredMixin, generic.FormView):
     form_class = AdminPasswordChangeForm
     template_name = 'monitoring/uzivatel/heslo.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        self.user = get_object_or_404(User, pk=self.kwargs['pk'])
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse_lazy('monitoring:uzivatel-list')
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
-        kwargs['user'] = self.get_object()
+        kwargs['user'] = self.user
         return kwargs
+
+    def form_valid(self, form):
+        self.user.set_password(form.cleaned_data['password1'])
+        self.user.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+
+
 ###
 # ZABBIX
 ###

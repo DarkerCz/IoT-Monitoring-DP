@@ -10,6 +10,7 @@ from uuid import uuid4
 
 from django.db import models
 from django.utils.timezone import now
+from django.utils.translation import ugettext_lazy as _
 
 from django_extensions.db.models import TimeStampedModel
 
@@ -130,7 +131,6 @@ class Zprava(TimeStampedModel):
         packet = struct.pack('<BHBp', pull_ack_zprava.verze, int(pull_ack_zprava.token), int(pull_ack_zprava.typ_zpravy), bytes(pull_ack_zprava.gateway.eui, 'utf-8'))
         return packet
 
-
     def decoduj_payload_data_na_hex(self):
         try:
             payload = json.loads(self.payload)['rxpk'][0]['data']
@@ -160,6 +160,15 @@ class Zprava(TimeStampedModel):
             if self.zarizeni != zarizeni:
                 logger.error("Pokus o přiřazení zařízení ke zprávě pk: {} u které je jiné zařízení".format(self.pk))
 
+    def text_data(self):
+        if self.data_hodnoty.exists():
+            hodnoty = []
+            for hodnota in self.data_hodnoty.all().order_by('typ_hodnoty'):
+                hodnoty.append(hodnota.__str__())
+            return "; ".join(hodnoty)
+        else:
+            return None
+
     def zpracuj_data(self):
         try:
             if self.hex_data:
@@ -168,35 +177,73 @@ class Zprava(TimeStampedModel):
                 if decryptovana_data:
                     zpracovana_data = utils.decoduj_cayenne_lpp(decryptovana_data)
                     if zpracovana_data:
-                        print(zpracovana_data)
-                        
+                        for hodnota in zpracovana_data:
+                            data, created = Data.objects.get_or_create(zarizeni = self.zarizeni, 
+                                zprava= self, hodnota=hodnota['value'], 
+                                typ_hodnoty = app_settings.DATA_KANAL[hodnota['channel']], 
+                                jednotka = app_settings.JEDNOTKA_KANAL[hodnota['channel']],
+                            )
+                        return self.data_hodnoty.all()
             return None
         except Exception as e:
             logger.error("Chyba pri zpracovani dat zpravy pk: {}".format(self.pk))
 
 
-#@receiver(post_save, sender=Zprava)
-#def Zprava_post_save_handler(sender, instance, created, **kwargs):
-    #if created:
-        #instance.decoduj_payload_data_na_hex()
+@receiver(post_save, sender=Zprava)
+def Zprava_post_save_handler(sender, instance, created, **kwargs):
+    if created:
+        instance.zpracuj_data()
 
 
 class Data(TimeStampedModel):
 
+    VOLTY = 'VOLTY'
+    STUPNE_C = 'STUPNE_C'
+
+    NAPETI = 'NAPETI'
+    TEPLOTA = 'TEPLOTA'
+    STAV_KONTAKTU = 'STAV_KONTAKTU'
+
+    JEDNOTKY = (
+        (VOLTY, 'V'),
+        (STUPNE_C, '°C'),
+    )
+
+    TYPY_HODNOT = (
+        (NAPETI, 'Napětí'),
+        (TEPLOTA, 'Teplota'),
+        (STAV_KONTAKTU, 'Stav kontaktu'),
+    )
+
     zprava = models.ForeignKey(Zprava, related_name='data_hodnoty', verbose_name='data_hodnoty',
+        blank=True, null=True, on_delete=models.SET_NULL)
+
+    zarizeni = models.ForeignKey(Zarizeni, related_name='data_hodnoty', verbose_name='data_hodnoty',
         blank=True, null=True, on_delete=models.SET_NULL)
 
     uuid = models.UUIDField(unique=True, default=uuid4, editable=False)
 
-    stav_kontaktu = models.BooleanField('Stav kontaktu')
-    teplota = models.DecimalField('Teplota', max_digits=5, decimal_places=2)
-    napeti_baterie = models.DecimalField('Napětí baterie', max_digits=5, decimal_places=2)
+    hodnota = models.DecimalField('Hodnota', max_digits=5, decimal_places=2, blank=True, null=True)
+
+    typ_hodnoty = models.CharField('Typ hodnoty', choices=TYPY_HODNOT, max_length=20, blank=True, null=True)
+    jednotka = models.CharField('Jednotka', choices=JEDNOTKY, max_length=20, blank=True, null=True)
 
     class Meta:
         verbose_name = 'Data'
         verbose_name_plural = 'Data'
         ordering = ('-created',)
 
+    def __str__(self):
+        return "{}: {}{}{}".format(self.get_typ_hodnoty_display(), self.render_hodnota, " " if self.jednotka else "", self.get_jednotka_display() if self.jednotka else "")
+
+    @property
+    def render_hodnota(self):
+        if self.jednotka:
+            return self.hodnota
+        elif self.hodnota:
+            return _("Spojeno")
+        else:
+            return _("Rozpojeno")
 
 
 class Zabbix(TimeStampedModel):

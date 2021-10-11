@@ -45,6 +45,7 @@ def generuj_nwkskey():
             nwkskey = klic
             return klic
 
+
 def generuj_appskey():
     appskey = None
     while not appskey:
@@ -54,6 +55,18 @@ def generuj_appskey():
         except models.Zarizeni.DoesNotExist:
             appskey = klic
             return klic
+
+
+def generuj_deveui():
+    deveui = None
+    while not deveui:
+        klic = generuj_klic(64)
+        try:
+            models.Zarizeni.objects.get(deveui=klic)
+        except models.Zarizeni.DoesNotExist:
+            deveui = klic
+            return klic
+
 
 def decryptuj_data(data):
     try:

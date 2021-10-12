@@ -1,15 +1,4 @@
 {% load i18n %}
-<style>
-    .fa-arrow-down {
-        color: green;
-    }
-    .fa-arrow-up {
-        color: red;
-    }
-    #brany-dataTable td, #brany-dataTable th {
-        padding: .3rem;
-    }
-</style>
 
 <div class="table-responsive p-3">
     <table class="table align-items-center table-flush" id="brany-dataTable">
@@ -25,7 +14,7 @@
         <tbody>
             {% for zprava in zpravy %}
                 <tr>
-                    <td>{{ zprava.smer }}&nbsp;{% if zprava.smer == 'RX'%}<i class="fas fa-arrow-down"></i>{% else %}<i class="fas fa-arrow-up"></i>{% endif %}</td>
+                    <td>{{ zprava.smer }}&nbsp;{% if zprava.smer == 'RX'%}<i class="fas fa-arrow-down fa-green"></i>{% else %}<i class="fas fa-arrow-up fa-red"></i>{% endif %}</td>
                     <td>{{ zprava.created|date:'H:i:s' }}</td>
                     <td>{{ zprava.gateway.nazev }}</td>
                     <td>{{ zprava.get_typ_zpravy_display }}</td>

@@ -9,3 +9,29 @@
     color: #757575;
     text-decoration: underline;
 }
+
+.fa-green {
+    color: green;
+}
+
+.fa-red {
+    color: red;
+}
+
+#brany-dataTable td, #brany-dataTable th {
+    padding: .3rem;
+}
+
+#zpravy-dataTable td, #zpravy-dataTable th {
+    padding: .3rem;
+}
+
+.v-middle{
+    vertical-align: middle !important;
+}
+
+.toggle-handle{
+    color: #333;
+    background-color: #fff;
+    border-color: #ccc;
+}

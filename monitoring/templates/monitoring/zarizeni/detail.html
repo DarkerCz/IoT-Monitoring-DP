@@ -1,26 +1,127 @@
 {% extends "monitoring/index.html" %}
 
 {% load i18n %}
+{% load as_bytes %}
 
 {% block content %}
     <!-- NADPIS -->
     <div class="container-fluid" id="container-wrapper">
         <div class="d-sm-flex align-items-center justify-content-between mb-4">
-            <h1 class="h3 mb-0 text-gray-800">{% trans "Zařízení" %}</h1>
+            <h1 class="h3 mb-0 text-gray-800">{% trans "Detail zařízení" %}: {{ zarizeni.nazev }}</h1>
         </div>
     </div>
+
     <div class="row">
-        <div class="col-lg-12">
+        <div class="col-lg-6">
             <div class="card mb-4">
                 <div class="card-header py-3 justify-content-between">
                     <div class="row">
                         <div class="col-lg-6">
-                            <h6 class="m-0 font-weight-bold text-primary">{% trans "Detail zařízení" %}: {{ zarizeni.nazev }}</h6>
+                            <h6 class="m-0 font-weight-bold text-primary">{% trans "Informace o zařízení" %}</h6>
+                        </div>
+                        <div class="col-lg-6 pull-right">
+                            <a href="{% url "monitoring:zarizeni-edit" zarizeni.pk %}" class='btn btn-sm btn-info'><i class="fas fa-edit"></i>&nbsp;{% trans "Upravit" %}</a>
                         </div>
                     </div>
                 </div>
+                <div class="panel-body">
+                    <div class="table-responsive p-3">
+                        <table class="table align-items-center table-flush" id="zpravy-dataTable">
+                            <tbody>
+                                <tr>
+                                    <th>{% trans "UUID" %}</th>
+                                    <td>{{ zarizeni.uuid }}</td>
+                                </tr>
+                                <tr>
+                                    <th>{% trans "Název" %}</th>
+                                    <td>{{ zarizeni.nazev }}</td>
+                                </tr>
+                                <tr>
+                                    <th class="v-middle">{% trans "DevAddr" %}</th>
+                                    <td>
+                                        <div class="input-group bootstrap-touchspin bootstrap-touchspin-injected">
+                                            <input type="text" class="form-control bg-white" value="{{ zarizeni.devaddr|as_bytes }}" disabled>
+                                            <button class="btn btn-primary btn-copy" type="button" data-clipboard-action="copy" data-clipboard-text="{{ zarizeni.devaddr }}"><i class="fas fa-copy"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th class="v-middle">{% trans "DevEUI" %}</th>
+                                    <td>
+                                        <div class="input-group bootstrap-touchspin bootstrap-touchspin-injected">
+                                            <input type="text" class="form-control bg-white" value="{{ zarizeni.deveui|as_bytes }}" disabled>
+                                            <button class="btn btn-primary btn-copy" type="button" data-clipboard-action="copy" data-clipboard-text="{{ zarizeni.deveui }}"><i class="fas fa-copy"></i></button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th class="v-middle">{% trans "NwkSKey" %}</th>
+                                    <td>
+                                        <div class="input-group bootstrap-touchspin bootstrap-touchspin-injected">
+                                            <input type="password" class="form-control bg-white" value="{{ zarizeni.nwkskey|as_bytes }}" disabled>
+                                            <span class="input-group-btn input-group-append">
+                                                <button class="btn btn-primary password-toggle-btn" type="button"><i class="far fa-eye"></i></button>
+                                                <button class="btn btn-primary btn-copy" type="button" data-clipboard-action="copy" data-clipboard-text="{{ zarizeni.nwkskey }}"><i class="fas fa-copy"></i></button>
+                                            </span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th class="v-middle">{% trans "AppSKey" %}</th>
+                                    
+                                    <td>
+                                        <div class="input-group bootstrap-touchspin bootstrap-touchspin-injected">
+                                            <input type="password" class="form-control bg-white" value="{{ zarizeni.appskey|as_bytes }}" disabled>
+                                            <span class="input-group-btn input-group-append">
+                                                <button class="btn btn-primary password-toggle-btn" type="button"><i class="far fa-eye"></i></button>
+                                                <button class="btn btn-primary btn-copy" type="button" data-clipboard-action="copy" data-clipboard-text="{{ zarizeni.appskey }}"><i class="fas fa-copy"></i></button>
+                                        
+                                            </span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>{% trans "Povoleno" %}</th>
+                                    <td><span class="badge badge-{{ zarizeni.povoleno|yesno:_("success,danger") }}">{{ zarizeni.povoleno|yesno:_("Povoleno,Zakázáno") }}</span></td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="card mb-4">
+                <div class="card-header py-3 justify-content-between">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <h6 class="m-0 font-weight-bold text-primary">{% trans "Připojené Zabbixy" %}</h6>
+                        </div>
+                        <div class="col-lg-6 pull-right">
+                            <a href="{% url "monitoring:zabbix-create" %}" class='btn btn-sm btn-info'><i class="fas fa-plus"></i>&nbsp;{% trans "Přidat nový Zabbix" %}</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-body" data-autoload='true' id="zarizeni-zabbix-list" data-content-url="{% url 'monitoring:zarizeni-zabbix' zarizeni.pk %}"></div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header py-3 justify-content-between">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <h6 class="m-0 font-weight-bold text-primary">{% trans "Posledních 20 zpráv zařízení" %} {{ zarizeni.nazev }}</h6>
+                        </div>
+                        <div class="col-lg-6 pull-right">
+                            <a href="#" class='btn btn-sm btn-info zpravy-obnovit'><i class="fas fa-sync"></i>&nbsp;{% trans "Obnovit" %}</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-body" data-autoload='false' id="zpravy-list" data-content-url="{% url 'monitoring:zarizeni-zpravy' zarizeni.pk %}"></div>
             </div>
         </div>
     </div>
 {% endblock %}
+
+
+
 

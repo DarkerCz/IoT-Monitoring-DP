@@ -6,6 +6,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
+from django.contrib import messages
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
 from django.urls import reverse_lazy
@@ -95,13 +96,16 @@ class ZarizeniListView(LoginRequiredMixin, generic.ListView):
     template_name = 'monitoring/zarizeni/list.html'
 
 
-# Posledních 10 dat ze všech zařízení
+# Posledních zpravy zarizeni
 class ZarizeniZpravyListView(LoginRequiredMixin, generic.TemplateView):
     template_name = 'monitoring/zarizeni/zpravy.html'
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context.update({'zpravy': models.Zprava.objects.filter(data_hodnoty__isnull=False).order_by('-created').distinct()[:10]})
+        zpravy = models.Zprava.objects.filter(data_hodnoty__isnull=False).order_by('-created').distinct()
+        if 'zarizeni_pk' in self.kwargs:
+            zpravy = zpravy.filter(zarizeni_id=self.kwargs['zarizeni_pk']).order_by('-created').distinct()
+        context.update({'zpravy': zpravy[:20]})
         return context
 
 # Přidání zařízení
@@ -111,7 +115,7 @@ class ZarizeniCreateView(LoginRequiredMixin, generic.CreateView):
     template_name = 'monitoring/zarizeni/form.html'
 
     def get_success_url(self):
-        return reverse_lazy('monitoring:zarizeni-list')
+        return reverse_lazy('monitoring:zarizeni-detail', kwargs={'pk': self.object.pk})
 
     def get_initial(self):
         initial = super().get_initial()
@@ -129,12 +133,41 @@ class ZarizeniEditView(LoginRequiredMixin, generic.UpdateView):
     template_name = 'monitoring/zarizeni/form.html'
 
     def get_success_url(self):
-        return reverse_lazy('monitoring:zarizeni-list')
+        return reverse_lazy('monitoring:zarizeni-detail', kwargs={'pk': self.object.pk})
 
 # Detail zařízení
 class ZarizeniDetailView(LoginRequiredMixin, generic.DetailView):
     model = models.Zarizeni
     template_name = 'monitoring/zarizeni/detail.html'
+
+
+# Zarizeni a jeho propojeni do Zabbixu
+class ZarizeniZabbixView(LoginRequiredMixin, generic.DetailView):
+    model = models.Zarizeni
+    template_name = 'monitoring/zarizeni/zabbix.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({'zabbixy': models.Zabbix.objects.all().order_by('nazev')})
+        return context
+
+
+class ZarizeniZabbixToggleView(LoginRequiredMixin, generic.DetailView):
+    model = models.Zarizeni
+    pk_url_kwarg = 'zarizeni_pk'
+
+    def post(self, request, *args, **kwargs):
+        zarizeni = self.get_object()
+        zabbix = get_object_or_404(models.Zabbix, pk=self.kwargs['zabbix_pk'])
+        if zarizeni in zabbix.zarizeni.all():
+            zabbix.zarizeni.remove(zarizeni)
+            messages.add_message(request, messages.ERROR, _("Chyba při ukončování zkoušky"))
+            return JsonResponse({'success': True}, status=200)
+        else:
+            zabbix.zarizeni.add(zarizeni)
+            messages.add_message(request, messages.ERROR, _("Chyba při ukončování zkoušky"))
+            return JsonResponse({'success': True}, status=200)
+        return JsonResponse({'success': False}, status=400)
 
 ###
 # UZIVATEL

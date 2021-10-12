@@ -58,7 +58,6 @@ class Zarizeni(TimeStampedModel):
 
     uuid = models.UUIDField(unique=True, default=uuid4, editable=False)
     nazev = models.CharField('Název', max_length=128, blank=True, null=True)
-    trida = models.CharField('Třída', max_length=128, blank=True, null=True)
     devaddr = models.CharField('DevAddr', max_length=128, blank=True, null=True)
     deveui = models.CharField('DevEUI', max_length=128, blank=True, null=True)
     nwkskey = models.CharField('NwkSKey', max_length=128, blank=True, null=True)

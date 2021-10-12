@@ -23,10 +23,13 @@ urlpatterns = [
 
     # Zarizeni
     path('zarizeni/list', views.ZarizeniListView.as_view(), name='zarizeni-list'),
-    path('zarizeni/zpravy', views.ZarizeniZpravyListView.as_view(), name='zarizeni-zpravy'),
+    path('zarizeni/zpravy', views.ZarizeniZpravyListView.as_view(), name='zarizeni-vsechny-zpravy'),
+    path('zarizeni/<int:zarizeni_pk>/zpravy', views.ZarizeniZpravyListView.as_view(), name='zarizeni-zpravy'),
     path('zarizeni/create', views.ZarizeniCreateView.as_view(), name='zarizeni-create'),
     path('zarizeni/<int:pk>/edit/', views.ZarizeniEditView.as_view(), name='zarizeni-edit'),
     path('zarizeni/<int:pk>/detail/', views.ZarizeniDetailView.as_view(), name='zarizeni-detail'),
+    path('zarizeni/<int:pk>/zabbix/', views.ZarizeniZabbixView.as_view(), name='zarizeni-zabbix'),
+    path('zarizeni/<int:zarizeni_pk>/zabbix/<int:zabbix_pk>/toggle', views.ZarizeniZabbixToggleView.as_view(), name='zarizeni-zabbix-toggle'),
 
     # Uzivatele
     path('uzivatel/list', views.UzivatelListView.as_view(), name='uzivatel-list'),

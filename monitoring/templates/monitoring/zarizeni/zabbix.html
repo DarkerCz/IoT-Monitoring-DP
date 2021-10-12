@@ -1,0 +1,50 @@
+{% load i18n %}
+{% load zarizeni_zabbix %}
+
+<div class="table-responsive p-3">
+    <table class="table align-items-center table-flush" id="zabbix-dataTable">
+        <thead class="thead-light">
+            <tr>
+                <th>{% trans "Používat" %}</th>
+                <th>{% trans "Název" %}</th>
+                <th>{% trans "IP" %}</th>
+                <th>{% trans "Povolen" %}</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for zabbix in zabbixy %}
+                <tr>
+                    <td><input class="toggle-btn" type="checkbox" data-toggle="toggle" {% if zarizeni|zarizeni_zabbix:zabbix.pk %}checked{% endif %} data-url={% url 'monitoring:zarizeni-zabbix-toggle' zarizeni.pk zabbix.pk %}></td>
+                    <td>{{ zabbix.nazev }}</td>
+                    <td>{{ zabbix.ip_adresa }}:{{ zabbix.port }}</td>
+                    <td><span class="badge badge-{{ zabbix.povolen|yesno:_("success,danger") }}">{{ zabbix.povolen|yesno:_("Povolen,Zakázán") }}</span></td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="4">
+                        {% trans "Není definován žádný Zabbix" %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<script>
+	$('.toggle-btn').bootstrapToggle({
+      on: '<i class="fas fa-check"></i>',
+      off: '<i class="fas fa-times"></i>',
+      onstyle: 'success',
+      offstyle: 'danger',
+      size: 'small'
+    });
+    $('.toggle-btn').change(function() {
+        var url = $(this).data('url');
+        $.ajax({
+            type: 'POST',
+            url: url,
+            data: {
+                'csrfmiddlewaretoken': '{{ csrf_token }}',
+            },
+        });
+    })
+</script>

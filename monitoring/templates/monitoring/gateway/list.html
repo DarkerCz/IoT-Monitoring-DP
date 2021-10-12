@@ -3,7 +3,6 @@
 {% load i18n %}
 
 {% block content %}
-    <!-- NADPIS -->
     <div class="container-fluid" id="container-wrapper">
         <div class="d-sm-flex align-items-center justify-content-between mb-4">
             <h1 class="h3 mb-0 text-gray-800">{% trans "Brány" %}</h1>
@@ -73,11 +72,6 @@
     <script>
         $(document).ready(function () {
             $('#brany-dataTable').DataTable();
-        });
-        $('.zpravy-obnovit').on('click', function(e){
-            e.preventDefault();
-            $('[data-toggle="popover"]').popover('hide');
-            $('#zpravy-list').reloadContent();
         });
     </script>
 {% endblock %}

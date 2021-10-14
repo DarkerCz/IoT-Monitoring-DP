@@ -22,8 +22,8 @@ $('.password-toggle-btn').on('click', function(e){
 
 new ClipboardJS('.btn-copy');
 
-$('.zpravy-obnovit').on('click', function(e){
+$('.reload-content').on('click', function(e){
     e.preventDefault();
     $('[data-toggle="popover"]').popover('hide');
-    $('#zpravy-list').reloadContent();
+    $(this).closest('.card').find('.panel-body').reloadContent();
 });

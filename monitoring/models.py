@@ -20,7 +20,6 @@ from django.db.models.signals import pre_save, post_save
 from django.core.validators import MaxValueValidator, MinValueValidator
 
 
-
 from . import utils
 from monitoring import settings as app_settings
 
@@ -49,6 +48,18 @@ class Gateway(TimeStampedModel):
         verbose_name_plural = 'Gateways'
         ordering = ('-created',)
 
+    @property
+    def pocet_zprav(self):
+        return self.zpravy.count()
+    
+    @property
+    def pocet_prichozich(self):
+        return self.zpravy.filter(smer=Zprava.RX).count()
+
+    @property
+    def pocet_odchozich(self):
+        return self.zpravy.filter(smer=Zprava.TX).count()
+
 @receiver(pre_save, sender=Gateway)
 def Gateway_pre_save_handler(sender, instance, **kwargs):
     instance.eui = instance.eui.upper()
@@ -68,6 +79,18 @@ class Zarizeni(TimeStampedModel):
         verbose_name = 'Zařízení'
         verbose_name_plural = 'Zařízení'
         ordering = ('-created',)
+
+    @property
+    def pocet_zprav(self):
+        return self.zpravy.count()
+    
+    @property
+    def pocet_prichozich(self):
+        return self.zpravy.filter(smer=Zprava.RX).count()
+
+    @property
+    def pocet_odchozich(self):
+        return self.zpravy.filter(smer=Zprava.TX).count()
 
 
 
@@ -244,10 +267,21 @@ class Data(TimeStampedModel):
         else:
             return _("Rozpojeno")
 
+    def odesli_data_do_povolenych_zabbixu(self):
+        for zabbix in self.zarizeni.zabbixs.filter(povolen=True):
+            status = utils.odesli_data_zabbixu(self, zabbix)
+            if not status:
+                logger.error("Nepovedlo se odeslat zprávu ID: {} a hodnotu typu {} do zabbixu ID: {}".format(self.zprava.pk, self.get_typ_hodnoty_display(), zabbix.pk))
+
+@receiver(post_save, sender=Data)
+def Data_post_save_handler(sender, instance, created, **kwargs):
+    if created:
+        instance.odesli_data_do_povolenych_zabbixu()
+
 
 class Zabbix(TimeStampedModel):
 
-    zarizeni = models.ManyToManyField(Zarizeni, related_name='zarizeni')
+    zarizeni = models.ManyToManyField(Zarizeni, related_name='zabbixs')
 
     uuid = models.UUIDField(unique=True, default=uuid4, editable=False)
 

@@ -1,0 +1,60 @@
+{% extends "monitoring/index.html" %}
+
+{% load i18n %}
+
+{% block content %}
+    <div class="container-fluid" id="container-wrapper">
+        <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800">{% trans "Dashboard" %}</h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header py-3 justify-content-between">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <h6 class="m-0 font-weight-bold text-primary">{% trans "Informace o bránách" %}</h6>
+                        </div>
+                        <div class="col-lg-6 pull-right">
+                            <a href="#" class='btn btn-sm btn-info reload-content'><i class="fas fa-sync"></i></i>&nbsp;{% trans "Obnovit" %}</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-body" data-autoload='true' id="dashboard-brany" data-content-url="{% url 'monitoring:dashboard-brany' %}"></div>
+            </div>
+        </div>
+         <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header py-3 justify-content-between">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <h6 class="m-0 font-weight-bold text-primary">{% trans "Informace o zařízeních" %}</h6>
+                        </div>
+                        <div class="col-lg-6 pull-right">
+                            <a href="#" class='btn btn-sm btn-info reload-content'><i class="fas fa-sync"></i></i>&nbsp;{% trans "Obnovit" %}</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-body" data-autoload='true' id="dashboard-zarizeni" data-content-url="{% url 'monitoring:dashboard-zarizeni' %}"></div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+         <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header py-3 justify-content-between">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <h6 class="m-0 font-weight-bold text-primary">{% trans "Souhrn zpráv" %}</h6>
+                        </div>
+                        <div class="col-lg-6 pull-right">
+                            <a href="#" class='btn btn-sm btn-info reload-content'><i class="fas fa-sync"></i></i>&nbsp;{% trans "Obnovit" %}</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-body" data-autoload='true' id="dashboard-zpravy" data-content-url="{% url 'monitoring:dashboard-zpravy' %}"></div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

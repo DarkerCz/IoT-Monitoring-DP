@@ -14,6 +14,9 @@ urlpatterns = [
 
     # Dashboard
     path('', views.IndexView.as_view(), name='index'),
+    path('dahboard/brany', views.DashboardBranyView.as_view(), name='dashboard-brany'),
+    path('dahboard/zarizeni', views.DashboardZarizeniView.as_view(), name='dashboard-zarizeni'),
+    path('dahboard/zpravy', views.DashboardZpravyView.as_view(), name='dashboard-zpravy'),
 
     # Brany - Gateway
     path('gateway/list', views.GatewayListView.as_view(), name='gateway-list'),

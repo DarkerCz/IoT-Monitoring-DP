@@ -1,0 +1,24 @@
+{% load i18n %}
+
+<div class="table-responsive p-3">
+    <table class="table align-items-center table-flush" id="brany-dataTable">
+        <tbody>
+            <tr>
+                <th>{% trans "Počet přijatých" %}</th>
+                <td>{{ prijatych }}</td>
+            </tr>
+            <tr>
+                <th>{% trans "Počet odeslaných" %}</th>
+                <td>{{ odeslanych }}</td>
+            </tr>
+            <tr>
+                <th>{% trans "Počet datových zpráv" %}</th>
+                <td>{{ datovych }}</td>
+            </tr>
+            <tr>
+                <th>{% trans "Zpracovaných dat" %}</th>
+                <td>{{ data }}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

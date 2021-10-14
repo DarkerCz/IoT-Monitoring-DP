@@ -1,0 +1,33 @@
+{% load i18n %}
+
+<div class="table-responsive p-3">
+    <table class="table align-items-center table-flush" id="zarizeni-dataTable">
+    <thead class="thead-light">
+        <tr>
+            <th>{% trans "Název" %}</th>
+            <th>{% trans "DevEUI" %}</th>
+            <th>{% trans "Povoleno" %}</th>
+            <th>{% trans "Počet zpracovaných zpráv" %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for zarizeni in vsechna_zarizeni %}
+            <tr>
+                <td><a href="{% url 'monitoring:zarizeni-detail' zarizeni.pk %}" class="href-grey">{{ zarizeni.nazev }}</a></td>
+                <td>{{ zarizeni.devaddr }}</td>
+                <td><span class="badge badge-{{ zarizeni.povoleno|yesno:_("success,danger") }}">{{ zarizeni.povoleno|yesno:_("Povoleno,Zakázáno") }}</span></td>
+                <td>{% trans "Příchozích" %}: {{ zarizeni.pocet_prichozich }}<br>
+                    {% trans "Odchozích" %}: {{ zarizeni.pocet_odchozich }}<br>
+                    {% trans "Celkem" %}: {{ zarizeni.pocet_zprav }}
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="4">
+                    {% trans "Není nastavena žádná brána" %}
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+    </table>
+</div>

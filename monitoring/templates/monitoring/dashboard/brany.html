@@ -1,0 +1,33 @@
+{% load i18n %}
+
+<div class="table-responsive p-3">
+    <table class="table align-items-center table-flush" id="brany-dataTable">
+    <thead class="thead-light">
+        <tr>
+            <th>{% trans "Název" %}</th>
+            <th>{% trans "IP adresa" %}</th>
+            <th>{% trans "Povolena" %}</th>
+            <th>{% trans "Počet zpracovaných zpráv" %}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for gateway in gateways %}
+            <tr>
+                <td>{{ gateway.nazev }}</td>
+                <td>{{ gateway.ip_adresa }}</td>
+                <td><span class="badge badge-{{ gateway.povolena|yesno:_("success,danger") }}">{{ gateway.povolena|yesno:_("Povolena,Zakázána") }}</span></td>
+                <td>{% trans "Příchozích" %}: {{ gateway.pocet_prichozich }}<br>
+                    {% trans "Odchozích" %}: {{ gateway.pocet_odchozich }}<br>
+                    {% trans "Celkem" %}: {{ gateway.pocet_zprav }}
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="4">
+                    {% trans "Není nastavena žádná brána" %}
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+    </table>
+</div>

@@ -1,8 +1,9 @@
 # -*- coding: UTF-8 -*-
 
-from datetime import timedelta
+from datetime import datetime, timedelta
 from django.views import generic
 from django.utils.translation import ugettext_lazy as _
+from django.core.mail import send_mail
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
@@ -10,7 +11,6 @@ from django.contrib import messages
 from django.shortcuts import get_object_or_404
 from django.http import JsonResponse, HttpResponseRedirect, HttpResponse
 from django.urls import reverse_lazy
-from django.utils.timezone import now
 
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, AdminPasswordChangeForm
 
@@ -37,12 +37,38 @@ class LoginView(generic.FormView):
         if user is not None:
             if user.is_active:
                 login(self.request, user)
+                send_mail('Přihlášení uživatele', 'Uživatel: {} se přihlásil v {}'.format(user.username, datetime.now().strftime("%H:%M:%S %D")), 'jarda@valdauf.eu', ['jarda@valdauf.eu',])
         return HttpResponseRedirect(reverse_lazy('monitoring:index',))
 
 
 # Dashboard
 class IndexView(LoginRequiredMixin, generic.TemplateView):
-    template_name = 'monitoring/index.html'
+    template_name = 'monitoring/dashboard/index.html'
+
+class DashboardBranyView(LoginRequiredMixin, generic.ListView):
+    model = models.Gateway
+    context_object_name = 'gateways'
+    template_name = 'monitoring/dashboard/brany.html'
+
+class DashboardZarizeniView(LoginRequiredMixin, generic.ListView):
+    model = models.Zarizeni
+    context_object_name = 'vsechna_zarizeni'
+    template_name = 'monitoring/dashboard/zarizeni.html'
+
+class DashboardZpravyView(LoginRequiredMixin, generic.ListView):
+    model = models.Zprava
+    context_object_name = 'zpravy'
+    template_name = 'monitoring/dashboard/zpravy.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({
+            'prijatych': models.Zprava.objects.filter(smer=models.Zprava.RX).count(),
+            'odeslanych': models.Zprava.objects.filter(smer=models.Zprava.TX).count(),
+            'datovych': models.Zprava.objects.filter(smer=models.Zprava.RX, hex_data__isnull=False).count(),
+            'data': models.Data.objects.count()
+            })
+        return context
 
 
 ###

@@ -6,7 +6,9 @@ import random
 
 from lora.crypto import loramac_decrypt
 from python_cayennelpp.decoder import decode
+from pyzabbix import ZabbixMetric, ZabbixSender
 
+from monitoring import settings as app_settings
 from . import models
 
 import logging
@@ -150,3 +152,16 @@ def zpracuj_data(hdata):
         logger.error("Chyba při zpracování dat zprávy - {}".format(e))
     return None
 
+
+def odesli_data_zabbixu(data, zabbix):
+    zbx = ZabbixSender(zabbix.ip_adresa, zabbix.port)
+    metrics = []
+    metric = ZabbixMetric(
+        data.zarizeni.nazev, 
+        app_settings.HODNOTY_KEY_ZABBIX[data.typ_hodnoty], 
+        data.hodnota, 
+        data.zprava.created.timestamp()
+    )
+    metrics.append(metric)
+    status = zbx.send(metrics)
+    return bool(not status.failed)

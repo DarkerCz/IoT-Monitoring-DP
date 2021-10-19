@@ -69,6 +69,16 @@ def generuj_deveui():
             deveui = klic
             return klic
 
+def generuj_devaddr():
+    devaddr = None
+    while not devaddr:
+        klic = generuj_klic(32)
+        try:
+            models.Zarizeni.objects.get(devaddr=klic)
+        except models.Zarizeni.DoesNotExist:
+            devaddr = klic
+            return klic
+
 
 def decryptuj_data(data):
     try:

@@ -146,7 +146,7 @@ class ZarizeniCreateView(LoginRequiredMixin, generic.CreateView):
     def get_initial(self):
         initial = super().get_initial()
         initial.update({
-            'deveui': utils.generuj_deveui(),
+            'devaddr': utils.generuj_devaddr(),
             'nwkskey': utils.generuj_nwkskey(), 
             'appskey': utils.generuj_appskey(),
         })

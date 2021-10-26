@@ -1,7 +1,8 @@
 *.pyc
 *.swp
 db.sqlite3
-settings.py
+*/settings/local.py
+xsettings.py
 !.gitignore
 !var/lib
 uwsgi.ini
@@ -9,4 +10,3 @@ uwsgi-touch-reload.txt
 nginx.conf
 supervisord_*.conf
 var/*
-var/lib/beanstalkd/*

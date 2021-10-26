@@ -37,7 +37,7 @@ class LoginView(generic.FormView):
         if user is not None:
             if user.is_active:
                 login(self.request, user)
-                send_mail('Přihlášení uživatele', 'Uživatel: {} se přihlásil v {}'.format(user.username, datetime.now().strftime("%H:%M:%S %D")), 'jarda@valdauf.eu', ['jarda@valdauf.eu',])
+                send_mail('Přihlášení uživatele', 'Uživatel: {} se přihlásil v {}'.format(user.username, datetime.now().strftime("%H:%M:%S %D")), 'server@valdauf.eu', ['jarda@valdauf.eu',])
         return HttpResponseRedirect(reverse_lazy('monitoring:index',))
 
 

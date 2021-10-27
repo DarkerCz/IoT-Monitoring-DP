@@ -9,6 +9,9 @@ PORT = 1700
 # band - vyber z EU868, AU915, US915
 BAND = 'EU868'
 
+# pocet sekund pro vyhledani duplicitni MIC
+DUPLICITNI_MIC_S = 60
+
 # DICT hodnot jako key v Zabbixu
 HODNOTY_KEY_ZABBIX = {
     'NAPETI': 'napeti',

@@ -80,25 +80,15 @@ def generuj_devaddr():
             return klic
 
 
-def decryptuj_data(data):
-    try:
-        zpracovana_data = zpracuj_data(data)
-        if zpracovana_data:
-            devaddr = zpracovana_data['devaddr']
-            sequence_counter = int(zpracovana_data['fcnt'], 16)
-            frm_payload = zpracovana_data['frm_payload']
-            try:
-                zarizeni = models.Zarizeni.objects.get(devaddr=devaddr)
-            except models.Zarizeni.DoesNotExist:
-                logger.info("Neznámé zařízení devaddr: {}".format(devaddr))
-                return None
-            key = zarizeni.appskey
-            text = ""
-            return loramac_decrypt(frm_payload, sequence_counter, key, devaddr)
-        return None
-    except Exception as e:
-        logger.error("Chyba při decryptovani dat: {}".format(data))
-        return None
+def decryptuj_data(zprava):
+    if zprava.zarizeni and zprava.fcnt:
+        zarizeni = zprava.zarizeni
+        devaddr = zprava.devaddr
+        sequence_counter = int(zprava.fcnt, 16)
+        key = zarizeni.appskey
+        frm_payload = zprava.frm_payload
+        return loramac_decrypt(frm_payload, sequence_counter, key, devaddr)
+    return None
 
 
 def decoduj_cayenne_lpp(data):
@@ -135,28 +125,29 @@ def zpracuj_data(hdata):
             devaddr = to_little(mac_payload[:8])
             fctrl = mac_payload[8:10]
             fcnt = to_little(mac_payload[10:14])
-            fopts_len = (int('0x'+fctrl, 16) & 15)*2
-            fopts = mac_payload[14:14+fopts_len]
-            fhdr_len = 14 + fopts_len
-            fhdr = mac_payload[0:fhdr_len]
-            fport = mac_payload[fhdr_len:fhdr_len+2]
-            frm_payload = mac_payload[fhdr_len+2:]
-            try:
-                zarizeni = models.Zarizeni.objects.get(devaddr=devaddr)
-            except models.Zarizeni.DoesNotExist:
-                logger.info("Neznámé zařízení devaddr: {}".format(devaddr))
-                return None
-            return {'mhdr': mhdr, 
-                    'mic': mic,
-                    'mac_payload': mac_payload,
-                    'devaddr': devaddr,
-                    'fctrl': fctrl,
-                    'fcnt': fcnt,
-                    'fopts': fopts,
-                    'fhdr': fhdr,
-                    'fport': fport,
-                    'frm_payload': frm_payload
-                    }
+            if fcnt:
+                fopts_len = (int('0x'+fctrl, 16) & 15)*2
+                fopts = mac_payload[14:14+fopts_len]
+                fhdr_len = 14 + fopts_len
+                fhdr = mac_payload[0:fhdr_len]
+                fport = mac_payload[fhdr_len:fhdr_len+2]
+                frm_payload = mac_payload[fhdr_len+2:]
+                try:
+                    zarizeni = models.Zarizeni.objects.get(devaddr=devaddr)
+                except models.Zarizeni.DoesNotExist:
+                    logger.info("Neznámé zařízení devaddr: {}".format(devaddr))
+                    return None
+                return {'mhdr': mhdr, 
+                        'mic': mic,
+                        'mac_payload': mac_payload,
+                        'devaddr': devaddr,
+                        'fctrl': fctrl,
+                        'fcnt': fcnt,
+                        'fopts': fopts,
+                        'fhdr': fhdr,
+                        'fport': fport,
+                        'frm_payload': frm_payload
+                        }
         return None
     except Exception as e:
         logger.error("Chyba při zpracování dat zprávy - {}".format(e))

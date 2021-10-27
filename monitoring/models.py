@@ -125,10 +125,20 @@ class Zprava(TimeStampedModel):
     payload = models.CharField('Payload', max_length=1024, blank=True, null=True)
     hex_data = models.CharField('HEX Data', max_length=1024, blank=True, null=True)
     data = models.CharField('Data', max_length=1024, blank=True, null=True)
-    mic = models.CharField('MIC', max_length=32, blank=True, null=True)
     ip_adresa = models.CharField('IP adresa', max_length=14, blank=True, null=True)
     port = models.PositiveIntegerField('Port', blank=True, null=True)
     smer = models.CharField('Směr zprávy', choices=SMERY, max_length=2, blank=True, null=True)
+    
+    mhdr = models.CharField('MHDR', max_length=16, blank=True, null=True)
+    mic = models.CharField('MIC', max_length=16, blank=True, null=True)
+    mac_payload = models.CharField('MAC Payload', max_length=256, blank=True, null=True)
+    devaddr = models.CharField('Adresa zařízení', max_length=16, blank=True, null=True)
+    fctrl = models.CharField('FCtrl', max_length=16, blank=True, null=True)
+    fcnt = models.CharField('FCnt', max_length=16, blank=True, null=True)
+    fopts = models.CharField('FOpts', max_length=16, blank=True, null=True)
+    fhdr = models.CharField('FHDR', max_length=128, blank=True, null=True)
+    fport = models.CharField('FPort', max_length=16, blank=True, null=True)
+    frm_payload = models.CharField('FRM payload', max_length=128, blank=True, null=True)
 
     class Meta:
         verbose_name = 'Zpráva'
@@ -170,7 +180,7 @@ class Zprava(TimeStampedModel):
             return None
     
     def je_duplicitni(self):
-        if Zprava.objects.filter(mic=self.mic, created__gte=now() - datetime.timedelta(seconds = 60)).exclude(pk=self.pk).count() > 1:
+        if Zprava.objects.filter(mic=self.mic, created__gte=now() - datetime.timedelta(seconds = getattr(app_settings, 'DUPLICITNI_MIC_S', 60))).exclude(pk=self.pk).count() > 1:
             return True
         return False
     
@@ -192,24 +202,20 @@ class Zprava(TimeStampedModel):
             return None
 
     def zpracuj_data(self):
-        try:
-            if self.hex_data:
-                decryptovana_data = None
-                decryptovana_data = utils.decryptuj_data(self.hex_data)
-                if decryptovana_data:
-                    zpracovana_data = utils.decoduj_cayenne_lpp(decryptovana_data)
-                    if zpracovana_data:
-                        for hodnota in zpracovana_data:
-                            data, created = Data.objects.get_or_create(zarizeni = self.zarizeni, 
-                                zprava= self, hodnota=hodnota['value'], 
-                                typ_hodnoty = app_settings.DATA_KANAL[hodnota['channel']], 
-                                jednotka = app_settings.JEDNOTKA_KANAL[hodnota['channel']],
-                            )
-                        return self.data_hodnoty.all()
-            return None
-        except Exception as e:
-            logger.error("Chyba pri zpracovani dat zpravy pk: {}".format(self.pk))
-
+        if self.frm_payload:
+            decryptovana_data = utils.decryptuj_data(self)
+            if decryptovana_data:
+                zpracovana_data = utils.decoduj_cayenne_lpp(decryptovana_data)
+                if zpracovana_data:
+                    for hodnota in zpracovana_data:
+                        data, created = Data.objects.get_or_create(zarizeni = self.zarizeni, 
+                            zprava= self, hodnota=hodnota['value'], 
+                            typ_hodnoty = app_settings.DATA_KANAL[hodnota['channel']], 
+                            jednotka = app_settings.JEDNOTKA_KANAL[hodnota['channel']],
+                        )
+                    return self.data_hodnoty.all()
+        return None
+    
 
 @receiver(post_save, sender=Zprava)
 def Zprava_post_save_handler(sender, instance, created, **kwargs):

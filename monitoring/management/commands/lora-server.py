@@ -75,9 +75,19 @@ class Command(BaseCommand):
                             zpracovana_data = zpracuj_data(hex_data)
                         if zpracovana_data:
                             zarizeni = Zarizeni.objects.get(devaddr=zpracovana_data['devaddr'])
-                            if not Zprava.objects.filter(mic=zpracovana_data['mic']).exists():
-                                zprava = Zprava.objects.create(gateway = gateway, typ_zpravy = typ_zpravy, verze = verze, token = token, mic = zpracovana_data['mic'], ip_adresa = addr[0], port = addr[1], smer = 'RX', payload = data[12:].decode("utf-8"), hex_data=hex_data, zarizeni=zarizeni)
-                                odeslat_push_ack(zprava)
+                            zpracovana_data['gateway'] = gateway
+                            zpracovana_data['typ_zpravy'] = typ_zpravy
+                            zpracovana_data['verze'] = verze
+                            zpracovana_data['token'] = token
+                            zpracovana_data['ip_adresa'] = addr[0]
+                            zpracovana_data['port'] = addr[1]
+                            zpracovana_data['smer'] = 'RX'
+                            zpracovana_data['payload'] = data[12:].decode("utf-8")
+                            zpracovana_data['hex_data'] = hex_data
+                            zpracovana_data['zarizeni'] = zarizeni
+                            zprava = Zprava(**zpracovana_data)
+                            zprava.save()
+                            odeslat_push_ack(zprava)
                     elif typ_zpravy == PULL_DATA:
                         if len(data) < 12:
                             logger.error("Délka zprávy PULL_DATA je kratší než minimální délka 12")

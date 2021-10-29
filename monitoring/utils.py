@@ -88,7 +88,7 @@ def decryptuj_data(zprava):
         key = zarizeni.appskey
         frm_payload = zprava.frm_payload
         return loramac_decrypt(frm_payload, sequence_counter, key, devaddr)
-    return None
+    return False
 
 
 def decoduj_cayenne_lpp(data):
@@ -99,7 +99,29 @@ def decoduj_cayenne_lpp(data):
         return decode(data)
     except Exception as e:
         logger.error("Chyba při dekódování cayenne lpp: {}".format(data))
-        return None
+        return False
+
+
+def over_konzistenci_dat(data, zprava):
+    delka = getattr(app_settings, 'POCET_CAYENNE_HODNOT', 3)
+    limity = getattr(app_settings, 'LIMITY_KANAL')
+    if len(data) != delka:
+        logger.error("Nekonzistentní data zprávy PK:{}, nesprávná délka {} != {}".format(zprava.pk, len(data), delka))
+        return False
+    else:
+        for hodnota in data:
+            try:
+                if limity[hodnota['channel']][0] <= hodnota['value'] <= limity[hodnota['channel']][1]:
+                    pass
+                else:
+                    logger.error("Nekonzistentní data zprávy PK:{}, data pro kanál {} mimo rozsah {} <> {}".format(zprava.pk, hodnota['channel'], hodnota['value'], limity[hodnota['channel']]))
+                    return False
+            except KeyError:
+                logger.error("Nekonzistentní data zprávy PK:{}, neznámý kanál {}".format(zprava.pk, hodnota['channel']))
+                return False
+    return True
+
+            
 
 
 # decoduj payload data
@@ -108,7 +130,7 @@ def decoduj_payload_na_hex(payload):
         payload = json.loads(payload)['rxpk'][0]['data']
         return base64.b64decode(payload).hex().upper()
     except:
-        return None
+        return False
 
 # zpracuj payload data
 def zpracuj_data(hdata):
@@ -136,7 +158,7 @@ def zpracuj_data(hdata):
                     zarizeni = models.Zarizeni.objects.get(devaddr=devaddr)
                 except models.Zarizeni.DoesNotExist:
                     logger.info("Neznámé zařízení devaddr: {}".format(devaddr))
-                    return None
+                    return False
                 return {'mhdr': mhdr, 
                         'mic': mic,
                         'mac_payload': mac_payload,
@@ -148,10 +170,10 @@ def zpracuj_data(hdata):
                         'fport': fport,
                         'frm_payload': frm_payload
                         }
-        return None
+        return False
     except Exception as e:
         logger.error("Chyba při zpracování dat zprávy - {}".format(e))
-    return None
+    return False
 
 
 def odesli_data_zabbixu(data, zabbix):

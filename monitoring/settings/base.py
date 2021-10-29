@@ -12,6 +12,8 @@ BAND = 'EU868'
 # pocet sekund pro vyhledani duplicitni MIC
 DUPLICITNI_MIC_S = 60
 
+POCET_CAYENNE_HODNOT = 3
+
 # DICT hodnot jako key v Zabbixu
 HODNOTY_KEY_ZABBIX = {
     'NAPETI': 'napeti',
@@ -29,4 +31,10 @@ JEDNOTKA_KANAL = {
     3: 'VOLTY',
     2: 'STUPNE_C',
     1: None
+}
+
+LIMITY_KANAL = {
+    3: (0, 5),
+    2: (-20, 60),
+    1: (0, 1)
 }

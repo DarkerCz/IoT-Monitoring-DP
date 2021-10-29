@@ -36,6 +36,7 @@ TX_ACK = 5
 class Gateway(TimeStampedModel):
 
     uuid = models.UUIDField(unique=True, default=uuid4, editable=False)
+
     ip_adresa = models.CharField('IP adresa', max_length=14, blank=True, null=True)
     nazev = models.CharField('Název', max_length=350, blank=True, null=True)
     eui = models.CharField('Gateway EUI', max_length=50, blank=True, null=True)
@@ -68,6 +69,7 @@ def Gateway_pre_save_handler(sender, instance, **kwargs):
 class Zarizeni(TimeStampedModel):
 
     uuid = models.UUIDField(unique=True, default=uuid4, editable=False)
+
     nazev = models.CharField('Název', max_length=128, blank=True, null=True)
     devaddr = models.CharField('DevAddr', max_length=128, blank=True, null=True)
     deveui = models.CharField('DevEUI', max_length=128, blank=True, null=True)
@@ -112,13 +114,14 @@ class Zprava(TimeStampedModel):
         (PULL_ACK, 'Pull acknowledge'),
     )
 
+    uuid = models.UUIDField(unique=True, default=uuid4, editable=False)
+
     gateway = models.ForeignKey(Gateway, related_name='zpravy', verbose_name='Gateway',
         blank=True, null=True, on_delete=models.SET_NULL)
 
     zarizeni = models.ForeignKey(Zarizeni, related_name='zpravy', verbose_name='Zarizeni',
         blank=True, null=True, on_delete=models.SET_NULL)
 
-    uuid = models.UUIDField(unique=True, default=uuid4, editable=False)
     typ_zpravy = models.IntegerField('Typ zprávy', choices=TYPY_ZPRAV, blank=True, null=True)
     verze = models.PositiveIntegerField('Verze', blank=True, null=True)
     token = models.CharField('Token', max_length=128, blank=True, null=True)
@@ -206,13 +209,16 @@ class Zprava(TimeStampedModel):
             decryptovana_data = utils.decryptuj_data(self)
             if decryptovana_data:
                 zpracovana_data = utils.decoduj_cayenne_lpp(decryptovana_data)
-                if zpracovana_data:
+                if zpracovana_data and utils.over_konzistenci_dat(zpracovana_data, self):
                     for hodnota in zpracovana_data:
-                        data, created = Data.objects.get_or_create(zarizeni = self.zarizeni, 
-                            zprava= self, hodnota=hodnota['value'], 
-                            typ_hodnoty = app_settings.DATA_KANAL[hodnota['channel']], 
-                            jednotka = app_settings.JEDNOTKA_KANAL[hodnota['channel']],
-                        )
+                        try:
+                            data, created = Data.objects.get_or_create(zarizeni = self.zarizeni, 
+                                zprava= self, hodnota=hodnota['value'], 
+                                typ_hodnoty = app_settings.DATA_KANAL[hodnota['channel']], 
+                                jednotka = app_settings.JEDNOTKA_KANAL[hodnota['channel']],
+                            )
+                        except Exception as e:
+                            logger.error("Chyba při zpracování dat zprávy PK: {}, chyba: {}".format(self.pk, e))
                     return self.data_hodnoty.all()
         return None
     
@@ -243,13 +249,13 @@ class Data(TimeStampedModel):
         (STAV_KONTAKTU, 'Stav kontaktu'),
     )
 
+    uuid = models.UUIDField(unique=True, default=uuid4, editable=False)
+
     zprava = models.ForeignKey(Zprava, related_name='data_hodnoty', verbose_name='data_hodnoty',
         blank=True, null=True, on_delete=models.SET_NULL)
 
     zarizeni = models.ForeignKey(Zarizeni, related_name='data_hodnoty', verbose_name='data_hodnoty',
         blank=True, null=True, on_delete=models.SET_NULL)
-
-    uuid = models.UUIDField(unique=True, default=uuid4, editable=False)
 
     hodnota = models.DecimalField('Hodnota', max_digits=5, decimal_places=2, blank=True, null=True)
 
@@ -275,9 +281,11 @@ class Data(TimeStampedModel):
 
     def odesli_data_do_povolenych_zabbixu(self):
         for zabbix in self.zarizeni.zabbixs.filter(povolen=True):
+            sender_log = ZabbixSenderLog.objects.create(data=self, zabbix=zabbix)
             status = utils.odesli_data_zabbixu(self, zabbix)
             if not status:
                 logger.error("Nepovedlo se odeslat zprávu ID: {} a hodnotu typu {} do zabbixu ID: {}".format(self.zprava.pk, self.get_typ_hodnoty_display(), zabbix.pk))
+                ZabbixSenderLog.objects.filter(pk=sender_log.pk).update(odeslano=False)
 
 @receiver(post_save, sender=Data)
 def Data_post_save_handler(sender, instance, created, **kwargs):
@@ -286,10 +294,10 @@ def Data_post_save_handler(sender, instance, created, **kwargs):
 
 
 class Zabbix(TimeStampedModel):
+    
+    uuid = models.UUIDField(unique=True, default=uuid4, editable=False)
 
     zarizeni = models.ManyToManyField(Zarizeni, related_name='zabbixs')
-
-    uuid = models.UUIDField(unique=True, default=uuid4, editable=False)
 
     nazev = models.CharField('Název', max_length=128, blank=True, null=True)
     ip_adresa = models.CharField('IP adresa', max_length=14)
@@ -300,4 +308,22 @@ class Zabbix(TimeStampedModel):
         verbose_name = 'Zabbix'
         verbose_name_plural = 'Zabbix'
         ordering = ('-created',)
+
+
+
+class ZabbixSenderLog(TimeStampedModel):
+
+    uuid = models.UUIDField(unique=True, default=uuid4, editable=False)
+
+    data = models.ForeignKey(Data, related_name='sender_log', on_delete=models.CASCADE)
+    zabbix = models.ForeignKey(Zabbix, related_name='sender_log', on_delete=models.CASCADE)
+    odeslano = models.BooleanField('Odesláno', default=True)
+
+    class Meta:
+        verbose_name = 'ZabbixSender log'
+        verbose_name_plural = 'ZabbixSender logy'
+        ordering = ('-created',)
+    
+
+
 

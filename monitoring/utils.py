@@ -106,7 +106,7 @@ def over_konzistenci_dat(data, zprava):
     delka = getattr(app_settings, 'POCET_CAYENNE_HODNOT', 3)
     limity = getattr(app_settings, 'LIMITY_KANAL')
     if len(data) != delka:
-        logger.error("Nekonzistentní data zprávy PK:{}, nesprávná délka {} != {}".format(zprava.pk, len(data), delka))
+        logger.error("Nekonzistentní data zprávy PK: {} ze zařízení PK: {}, nesprávná délka {} != {}".format(zprava.pk, zprava.zarizeni.pk, len(data), delka))
         return False
     else:
         for hodnota in data:
@@ -114,7 +114,7 @@ def over_konzistenci_dat(data, zprava):
                 if limity[hodnota['channel']][0] <= hodnota['value'] <= limity[hodnota['channel']][1]:
                     pass
                 else:
-                    logger.error("Nekonzistentní data zprávy PK:{}, data pro kanál {} mimo rozsah {} <> {}".format(zprava.pk, hodnota['channel'], hodnota['value'], limity[hodnota['channel']]))
+                    logger.error("Nekonzistentní data zprávy PK: {} ze zařízení PK: {}, data pro kanál {} mimo rozsah {} <> {}".format(zprava.pk, zprava.zarizeni.pk, hodnota['channel'], hodnota['value'], limity[hodnota['channel']]))
                     return False
             except KeyError:
                 logger.error("Nekonzistentní data zprávy PK:{}, neznámý kanál {}".format(zprava.pk, hodnota['channel']))
@@ -135,11 +135,10 @@ def decoduj_payload_na_hex(payload):
 # zpracuj payload data
 def zpracuj_data(hdata):
     try:
-        x = "0x" + hdata[:2]
-        typ = (int(x, 16) & 0xFF >> 5)
-        if typ in (JOIN_REQUEST, UN_DATA_UP, CO_DATA_UP):
+        mhdr = hdata[:2]
+        typ = (int(mhdr, 16) & 224) >> 5
+        if typ in (UN_DATA_UP, CO_DATA_UP):
             # ( PHYPayload = MHDR[1] | MACPayload[..] | MIC[4] )
-            mhdr = hdata[:2]
             mic = hdata[-8:]
             mac_payload = hdata[2:-8]
             # ( MACPayload = FHDR | FPort | FRMPayload )
@@ -159,7 +158,8 @@ def zpracuj_data(hdata):
                 except models.Zarizeni.DoesNotExist:
                     logger.info("Neznámé zařízení devaddr: {}".format(devaddr))
                     return False
-                return {'mhdr': mhdr, 
+                return {'typ_zpravy_MAC': typ,
+                        'mhdr': mhdr, 
                         'mic': mic,
                         'mac_payload': mac_payload,
                         'devaddr': devaddr,

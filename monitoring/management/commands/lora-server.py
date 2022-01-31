@@ -76,7 +76,7 @@ class Command(BaseCommand):
                         if zpracovana_data:
                             zarizeni = Zarizeni.objects.get(devaddr=zpracovana_data['devaddr'])
                             zpracovana_data['gateway'] = gateway
-                            zpracovana_data['typ_zpravy'] = typ_zpravy
+                            zpracovana_data['typ_zpravy_GWMP'] = typ_zpravy
                             zpracovana_data['verze'] = verze
                             zpracovana_data['token'] = token
                             zpracovana_data['ip_adresa'] = addr[0]

@@ -33,6 +33,14 @@ PULL_RESP = 3
 PULL_ACK = 4
 TX_ACK = 5
 
+JOIN_REQUEST = 0
+JOIN_ACCEPT = 1
+UN_DATA_UP = 2
+UN_DATA_DOWN = 3
+CO_DATA_UP = 4
+CO_DATA_DOWN = 5
+PROPRIETARY = 7
+
 class Gateway(TimeStampedModel):
 
     uuid = models.UUIDField(unique=True, default=uuid4, editable=False)
@@ -114,6 +122,17 @@ class Zprava(TimeStampedModel):
         (PULL_ACK, 'Pull acknowledge'),
     )
 
+    MAC_TYPY_ZPRAV = (
+        (JOIN_REQUEST, 'Join request'),
+        (JOIN_ACCEPT, 'Join accept'),
+        (UN_DATA_UP, 'Unconfirmed data UP'),
+        (UN_DATA_DOWN, 'Unconfirmed data DOWN'),
+        (CO_DATA_UP, 'Confirmed data UP'),
+        (CO_DATA_DOWN, 'Confirmed data DOWN'),
+        (PROPRIETARY, 'Proprietary'),
+    )
+
+    
     uuid = models.UUIDField(unique=True, default=uuid4, editable=False)
 
     gateway = models.ForeignKey(Gateway, related_name='zpravy', verbose_name='Gateway',
@@ -122,7 +141,8 @@ class Zprava(TimeStampedModel):
     zarizeni = models.ForeignKey(Zarizeni, related_name='zpravy', verbose_name='Zarizeni',
         blank=True, null=True, on_delete=models.SET_NULL)
 
-    typ_zpravy = models.IntegerField('Typ zprávy', choices=TYPY_ZPRAV, blank=True, null=True)
+    typ_zpravy_GWMP = models.IntegerField('Typ zprávy GWMP', choices=TYPY_ZPRAV, blank=True, null=True)
+    typ_zpravy_MAC = models.IntegerField('Typ zprávy MAC Message', choices=MAC_TYPY_ZPRAV, blank=True, null=True)
     verze = models.PositiveIntegerField('Verze', blank=True, null=True)
     token = models.CharField('Token', max_length=128, blank=True, null=True)
     payload = models.CharField('Payload', max_length=1024, blank=True, null=True)
@@ -149,21 +169,21 @@ class Zprava(TimeStampedModel):
         ordering = ('-created',)
 
     def push_ack_zprava(self):
-        push_ack_zprava = Zprava.objects.create(typ_zpravy = PUSH_ACK, verze = self.verze, token = self.token, ip_adresa = self.ip_adresa, port = self.port, smer = 'TX', zarizeni = self.zarizeni, gateway = self.gateway)
+        push_ack_zprava = Zprava.objects.create(typ_zpravy_GWMP = PUSH_ACK, verze = self.verze, token = self.token, ip_adresa = self.ip_adresa, port = self.port, smer = 'TX', zarizeni = self.zarizeni, gateway = self.gateway)
         return push_ack_zprava
 
     def push_ack_packet(self):
         push_ack_zprava = self.push_ack_zprava()
-        packet = struct.pack('<BHB', push_ack_zprava.verze, int(push_ack_zprava.token), int(push_ack_zprava.typ_zpravy))
+        packet = struct.pack('<BHB', push_ack_zprava.verze, int(push_ack_zprava.token), int(push_ack_zprava.typ_zpravy_GWMP))
         return packet
 
     def pull_ack_zprava(self):
-        pull_ack_zprava = Zprava.objects.create(typ_zpravy = PULL_ACK, verze = self.verze, token = self.token, ip_adresa = self.ip_adresa, port = self.port, smer = 'TX', gateway = self.gateway)
+        pull_ack_zprava = Zprava.objects.create(typ_zpravy_GWMP = PULL_ACK, verze = self.verze, token = self.token, ip_adresa = self.ip_adresa, port = self.port, smer = 'TX', gateway = self.gateway)
         return pull_ack_zprava
 
     def pull_ack_packet(self):
         pull_ack_zprava = self.pull_ack_zprava()
-        packet = struct.pack('<BHBp', pull_ack_zprava.verze, int(pull_ack_zprava.token), int(pull_ack_zprava.typ_zpravy), bytes(pull_ack_zprava.gateway.eui, 'utf-8'))
+        packet = struct.pack('<BHBp', pull_ack_zprava.verze, int(pull_ack_zprava.token), int(pull_ack_zprava.typ_zpravy_GWMP), bytes(pull_ack_zprava.gateway.eui, 'utf-8'))
         return packet
 
     def decoduj_payload_data_na_hex(self):
@@ -218,8 +238,13 @@ class Zprava(TimeStampedModel):
                                 jednotka = app_settings.JEDNOTKA_KANAL[hodnota['channel']],
                             )
                         except Exception as e:
-                            logger.error("Chyba při zpracování dat zprávy PK: {}, chyba: {}".format(self.pk, e))
+                            logger.error("Chyba při zpracování dat zprávy PK: {}, chyba: {} ze zarizeni PK: {}".format(self.pk, e, self.zarizeni.pk))
                     return self.data_hodnoty.all()
+        return None
+
+
+    def unconfirmed_data_down(self):
+
         return None
     
 

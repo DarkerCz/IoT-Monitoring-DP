@@ -14,7 +14,6 @@ from django.urls import reverse_lazy
 
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, AdminPasswordChangeForm
 
-
 from . import models
 from . import forms
 from . import utils
@@ -37,7 +36,6 @@ class LoginView(generic.FormView):
         if user is not None:
             if user.is_active:
                 login(self.request, user)
-                send_mail('Přihlášení uživatele', 'Uživatel: {} se přihlásil v {}'.format(user.username, datetime.now().strftime("%H:%M:%S %D")), 'server@valdauf.eu', ['jarda@valdauf.eu',])
         return HttpResponseRedirect(reverse_lazy('monitoring:index',))
 
 
@@ -146,9 +144,9 @@ class ZarizeniCreateView(LoginRequiredMixin, generic.CreateView):
     def get_initial(self):
         initial = super().get_initial()
         initial.update({
-            'devaddr': utils.generuj_devaddr(),
-            'nwkskey': utils.generuj_nwkskey(), 
-            'appskey': utils.generuj_appskey(),
+            'devaddr': utils.generuj_unikatni_klic('devaddr', 32),
+            'nwkskey': utils.generuj_unikatni_klic('nwkskey', 128), 
+            'appskey': utils.generuj_unikatni_klic('appskey', 128),
         })
         return initial
 

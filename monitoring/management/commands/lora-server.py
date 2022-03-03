@@ -57,42 +57,41 @@ class Command(BaseCommand):
             try: 
                 gateway = Gateway.objects.get(eui=gatewayEUI.upper(), povolena=True)
             except Exception as e:
-                gateway = None
                 logger.warning("Neznámá nebo zakázaná brána s EUI: {}".format(gatewayEUI))
-            if gateway:        
-                if ( typ_zpravy in (1, 2) or 
-                        verze == 1 and typ_zpravy in (PUSH_DATA, PULL_DATA) 
-                        or 
-                        verze == 2 and typ_zpravy in (PUSH_DATA, PULL_DATA, TX_ACK)
-                        ):
+            else:
+                if (typ_zpravy in (1, 2) or 
+                    verze == 1 and typ_zpravy in (PUSH_DATA, PULL_DATA) or 
+                    verze == 2 and typ_zpravy in (PUSH_DATA, PULL_DATA, TX_ACK)):
                     if typ_zpravy == PUSH_DATA:
                         if len(data) < 12:
                             logger.error("Délka zprávy PUSH_DATA je kratší než minimální délka 12")
-                        else:
-                            print("PUSH_DATA")
                         hex_data = decoduj_payload_na_hex(data[12:].decode("utf-8"))
                         if hex_data:
                             zpracovana_data = zpracuj_data(hex_data)
                         if zpracovana_data:
+                            mic=zpracovana_data['mic']
                             zarizeni = Zarizeni.objects.get(devaddr=zpracovana_data['devaddr'])
-                            zpracovana_data['gateway'] = gateway
-                            zpracovana_data['typ_zpravy_GWMP'] = typ_zpravy
-                            zpracovana_data['verze'] = verze
-                            zpracovana_data['token'] = token
-                            zpracovana_data['ip_adresa'] = addr[0]
-                            zpracovana_data['port'] = addr[1]
-                            zpracovana_data['smer'] = 'RX'
-                            zpracovana_data['payload'] = data[12:].decode("utf-8")
-                            zpracovana_data['hex_data'] = hex_data
-                            zpracovana_data['zarizeni'] = zarizeni
-                            zprava = Zprava(**zpracovana_data)
-                            zprava.save()
-                            odeslat_push_ack(zprava)
+                            if Zprava.objects.filter(mic=mic, zarizeni=zarizeni, created__gte=now() - datetime.timedelta(seconds = getattr(app_settings, 'DUPLICITNI_MIC_S', 60))).count() > 1:
+                                logger.debug("Nalezena duplicitní zpráva s MIC: {}".format(mic))
+                            else:
+                                print('ok')
+                                zpracovana_data['gateway'] = gateway
+                                zpracovana_data['typ_zpravy_GWMP'] = typ_zpravy
+                                zpracovana_data['verze'] = verze
+                                zpracovana_data['token'] = token
+                                zpracovana_data['ip_adresa'] = addr[0]
+                                zpracovana_data['port'] = addr[1]
+                                zpracovana_data['smer'] = 'RX'
+                                zpracovana_data['payload'] = data[12:].decode("utf-8")
+                                zpracovana_data['hex_data'] = hex_data
+                                zpracovana_data['zarizeni'] = zarizeni
+                                zprava = Zprava(**zpracovana_data)
+                                zprava.save()
+                                odeslat_push_ack(zprava)
                     elif typ_zpravy == PULL_DATA:
                         if len(data) < 12:
                             logger.error("Délka zprávy PULL_DATA je kratší než minimální délka 12")
                         else:
-                            print("PULL_DATA")
                             odeslat_pull_ack(verze, token, gatewayEUI, addr[0], addr[1])
                 else:
                     logger.warning("Nepodporovaný typ zprávy: {} a verze: {}".format(typ_zpravy, verze))

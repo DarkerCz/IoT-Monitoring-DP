@@ -32,51 +32,12 @@ def to_little(val):
     return str_little.upper()
 
 
-def generuj_klic(delka):
-    klic = random.getrandbits(delka)
-    return format(klic, 'x').upper()
-
-
-def generuj_nwkskey():
-    nwkskey = None
-    while not nwkskey:
-        klic = generuj_klic(128)
+def generuj_unikatni_klic(attr, delka):
+    while True:
+        klic = format(random.getrandbits(delka), 'x').upper()
         try:
-            models.Zarizeni.objects.get(nwkskey=klic)
+            models.Zarizeni.objects.get(**{attr: klic})
         except models.Zarizeni.DoesNotExist:
-            nwkskey = klic
-            return klic
-
-
-def generuj_appskey():
-    appskey = None
-    while not appskey:
-        klic = generuj_klic(128)
-        try:
-            models.Zarizeni.objects.get(appskey=klic)
-        except models.Zarizeni.DoesNotExist:
-            appskey = klic
-            return klic
-
-
-def generuj_deveui():
-    deveui = None
-    while not deveui:
-        klic = generuj_klic(64)
-        try:
-            models.Zarizeni.objects.get(deveui=klic)
-        except models.Zarizeni.DoesNotExist:
-            deveui = klic
-            return klic
-
-def generuj_devaddr():
-    devaddr = None
-    while not devaddr:
-        klic = generuj_klic(32)
-        try:
-            models.Zarizeni.objects.get(devaddr=klic)
-        except models.Zarizeni.DoesNotExist:
-            devaddr = klic
             return klic
 
 
@@ -122,8 +83,6 @@ def over_konzistenci_dat(data, zprava):
     return True
 
             
-
-
 # decoduj payload data
 def decoduj_payload_na_hex(payload):
     try:

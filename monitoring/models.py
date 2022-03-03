@@ -46,8 +46,8 @@ class Gateway(TimeStampedModel):
     uuid = models.UUIDField(unique=True, default=uuid4, editable=False)
 
     ip_adresa = models.CharField('IP adresa', max_length=14, blank=True, null=True)
-    nazev = models.CharField('Název', max_length=350, blank=True, null=True)
-    eui = models.CharField('Gateway EUI', max_length=50, blank=True, null=True)
+    nazev = models.CharField('Název', max_length=350)
+    eui = models.CharField('Gateway EUI', max_length=50, unique=True)
     lat = models.DecimalField('Latitude', max_digits=9, decimal_places=6, blank=True, null=True)
     lon = models.DecimalField('Longitude', max_digits=9, decimal_places=6, blank=True, null=True)
     povolena = models.BooleanField('Povolena', default=True)
@@ -78,11 +78,11 @@ class Zarizeni(TimeStampedModel):
 
     uuid = models.UUIDField(unique=True, default=uuid4, editable=False)
 
-    nazev = models.CharField('Název', max_length=128, blank=True, null=True)
-    devaddr = models.CharField('DevAddr', max_length=128, blank=True, null=True)
-    deveui = models.CharField('DevEUI', max_length=128, blank=True, null=True)
-    nwkskey = models.CharField('NwkSKey', max_length=128, blank=True, null=True)
-    appskey = models.CharField('AppSKey', max_length=128, blank=True, null=True)
+    nazev = models.CharField('Název', max_length=128)
+    devaddr = models.CharField('DevAddr', max_length=128)
+    deveui = models.CharField('DevEUI', max_length=128, unique=True)
+    nwkskey = models.CharField('NwkSKey', max_length=128)
+    appskey = models.CharField('AppSKey', max_length=128)
     povoleno = models.BooleanField('Povoleno', default=True)
 
     class Meta:
@@ -244,7 +244,6 @@ class Zprava(TimeStampedModel):
 
 
     def unconfirmed_data_down(self):
-
         return None
     
 

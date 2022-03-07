@@ -107,15 +107,6 @@
     <script src='{% static "monitoring/js/bootstrap-toggle.min.js" %}'></script>
     <script src='{% static "monitoring/js/notify.min.js" %}'></script>
     <script src='{% static "monitoring/js/custom.js" %}'></script>
-    {% if messages %}
-      
-        <script type="text/javascript">
-        alert("asdas");
-                {% for message in messages %}
-                    $.notify({ message: "{{ message }}" }, { type: "{{ message.level_tag }}" });
-                {% endfor %}
-        </script>
-    {% endif %}
   {% endblock %}
   {% block js %}
   {% endblock %}

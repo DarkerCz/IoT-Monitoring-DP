@@ -132,6 +132,7 @@ class ZarizeniZpravyListView(LoginRequiredMixin, generic.TemplateView):
         context.update({'zpravy': zpravy[:20]})
         return context
 
+
 # Přidání zařízení
 class ZarizeniCreateView(LoginRequiredMixin, generic.CreateView):
     model = models.Zarizeni
@@ -266,7 +267,7 @@ class ZabbixCreateView(LoginRequiredMixin, generic.CreateView):
     template_name = 'monitoring/zabbix/form.html'
 
     def get_success_url(self):
-        return reverse_lazy('monitoring:zabbix-list')
+        return reverse_lazy('monitoring:zabbix-detail', kwargs={'pk': self.object.pk})
 
 # Editace zabbixu
 class ZabbixEditView(LoginRequiredMixin, generic.UpdateView):
@@ -275,9 +276,34 @@ class ZabbixEditView(LoginRequiredMixin, generic.UpdateView):
     template_name = 'monitoring/zabbix/form.html'
 
     def get_success_url(self):
-        return reverse_lazy('monitoring:zabbix-list')
+        return reverse_lazy('monitoring:zabbix-detail', kwargs={'pk': self.object.pk})
+
 
 # Detail zabbixu
 class ZabbixDetailView(LoginRequiredMixin, generic.DetailView):
     model = models.Zabbix
     template_name = 'monitoring/zabbix/detail.html'
+
+# Posledních 10 zpráv odeslaných do zabbixu
+class ZabbixZpravyListView(LoginRequiredMixin, generic.TemplateView):
+    template_name = 'monitoring/zabbix/zpravy.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        zpravy = models.ZabbixSenderLog.objects.all().order_by('-created')
+        if 'zabbix_pk' in self.kwargs:
+            zpravy = zpravy.filter(zabbix_id=self.kwargs['zabbix_pk']).order_by('-created').distinct()
+        context.update({'zpravy': zpravy[:10]})
+        return context
+
+
+# Zarizeni a jeho propojeni do Zabbixu
+class ZabbixZarizeniView(LoginRequiredMixin, generic.DetailView):
+    model = models.Zarizeni
+    template_name = 'monitoring/zabbix/zarizeni.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context.update({'vsechna_zarizeni': models.Zarizeni.objects.all().order_by('nazev'),
+        'zabbix': self.get_object()})
+        return context

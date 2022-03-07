@@ -7,17 +7,17 @@
             <tr>
                 <th>{% trans "Používat" %}</th>
                 <th>{% trans "Název" %}</th>
-                <th>{% trans "IP" %}</th>
+                <th>{% trans "DevEUI" %}</th>
                 <th>{% trans "Povolen" %}</th>
             </tr>
         </thead>
         <tbody>
-            {% for zabbix in zabbixy %}
+            {% for zarizeni in vsechna_zarizeni %}
                 <tr>
                     <td><input class="toggle-btn" type="checkbox" data-toggle="toggle" {% if zarizeni|zarizeni_zabbix:zabbix.pk %}checked{% endif %} data-url={% url 'monitoring:zarizeni-zabbix-toggle' zarizeni.pk zabbix.pk %}></td>
-                    <td><a href="{% url 'monitoring:zabbix-detail' zabbix.pk %}" target="_blank">{{ zabbix.nazev }}</a></td>
-                    <td>{{ zabbix.ip_adresa }}:{{ zabbix.port }}</td>
-                    <td><span class="badge badge-{{ zabbix.povolen|yesno:_("success,danger") }}">{{ zabbix.povolen|yesno:_("Povolen,Zakázán") }}</span></td>
+                    <td><a href="{% url 'monitoring:zarizeni-detail' zarizeni.pk %}" target="_blank">{{ zarizeni.nazev }}</a></td>
+                    <td>{{ zarizeni.deveui }}</td>
+                    <td><span class="badge badge-{{ zarizeni.povoleno|yesno:_("success,danger") }}">{{ zarizeni.povoleno|yesno:_("Povoleno,Zakázáno") }}</span></td>
                 </tr>
             {% empty %}
                 <tr>

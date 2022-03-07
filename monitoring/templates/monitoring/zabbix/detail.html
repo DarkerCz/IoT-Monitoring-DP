@@ -5,19 +5,72 @@
 {% block content %}
     <div class="container-fluid" id="container-wrapper">
         <div class="d-sm-flex align-items-center justify-content-between mb-4">
-            <h1 class="h3 mb-0 text-gray-800">{% trans "Zabbix" %}</h1>
+            <h1 class="h3 mb-0 text-gray-800">{% trans "Detail zabbixu" %}: {{ zabbix.nazev }}</h1>
         </div>
     </div>
     <div class="row">
-        <div class="col-lg-12">
+        <div class="col-lg-6">
             <div class="card mb-4">
                 <div class="card-header py-3 justify-content-between">
                     <div class="row">
                         <div class="col-lg-6">
-                            <h6 class="m-0 font-weight-bold text-primary">{% trans "Detail zabbixu" %}: {{ zabbix.nazev }}</h6>
+                            <h6 class="m-0 font-weight-bold text-primary">{% trans "Informace o zařízení" %}</h6>
+                        </div>
+                        <div class="col-lg-6 pull-right">
+                            <a href="{% url "monitoring:zabbix-edit" zabbix.pk %}" class='btn btn-sm btn-info'><i class="fas fa-edit"></i>&nbsp;{% trans "Upravit" %}</a>
                         </div>
                     </div>
                 </div>
+                <div class="panel-body">
+                    <div class="table-responsive p-3">
+                        <table class="table align-items-center table-flush" id="zpravy-dataTable">
+                            <tbody>
+                                <tr>
+                                    <th>{% trans "UUID" %}</th>
+                                    <td>{{ zabbix.uuid }}</td>
+                                </tr>
+                                <tr>
+                                    <th>{% trans "Název" %}</th>
+                                    <td>{{ zabbix.nazev }}</td>
+                                </tr>
+                                <tr>
+                                    <th>{% trans "IP adresa" %}</th>
+                                    <td>{{ zabbix.ip_adresa }}</td>
+                                </tr>
+                                <tr>
+                                    <th>{% trans "Povoleno" %}</th>
+                                    <td><span class="badge badge-{{ zabbix.povolen|yesno:_("success,danger") }}">{{ zabbix.povolen|yesno:_("Povoleno,Zakázáno") }}</span></td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="card mb-4">
+                <div class="card-header py-3 justify-content-between">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <h6 class="m-0 font-weight-bold text-primary">{% trans "Připojená zařízení" %}</h6>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-body" data-autoload='true' id="zarizeni-zabbix-list" data-content-url="{% url 'monitoring:zabbix-zarizeni' zabbix.pk %}"></div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="card mb-4">
+                <div class="card-header py-3 justify-content-between">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <h6 class="m-0 font-weight-bold text-primary">{% trans "Posledních 10 zpráv" %}</h6>
+                        </div>
+                        <div class="col-lg-6 pull-right">
+                            <a href="#" class='btn btn-sm btn-info reload-content'><i class="fas fa-sync"></i></i>&nbsp;{% trans "Obnovit" %}</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-body" data-autoload='true' id="zabbix-zpravy-list" data-content-url="{% url 'monitoring:zabbix-zpravy' zabbix.pk %}"></div>
             </div>
         </div>
     </div>

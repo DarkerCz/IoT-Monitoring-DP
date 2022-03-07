@@ -45,4 +45,7 @@ urlpatterns = [
     path('zabbix/create', views.ZabbixCreateView.as_view(), name='zabbix-create'),
     path('zabbix/<int:pk>/edit/', views.ZabbixEditView.as_view(), name='zabbix-edit'),
     path('zabbix/<int:pk>/detail/', views.ZabbixDetailView.as_view(), name='zabbix-detail'),
+    path('zabbix/zpravy', views.ZabbixZpravyListView.as_view(), name='zabbix-vsechny-zpravy'),
+    path('zabbix/<int:zabbix_pk>/zpravy', views.ZabbixZpravyListView.as_view(), name='zabbix-zpravy'),
+    path('zabbix/<int:pk>/zarizeni/', views.ZabbixZarizeniView.as_view(), name='zabbix-zarizeni'),
 ]

@@ -5,8 +5,10 @@ import struct
 import json
 import base64
 import binascii
+import datetime
 
 from django.core.management.base import BaseCommand, CommandError
+from django.utils.timezone import now
 
 from monitoring.models import Gateway, Zprava, Zarizeni
 from monitoring import settings as app_settings
@@ -74,7 +76,6 @@ class Command(BaseCommand):
                             if Zprava.objects.filter(mic=mic, zarizeni=zarizeni, created__gte=now() - datetime.timedelta(seconds = getattr(app_settings, 'DUPLICITNI_MIC_S', 60))).count() > 1:
                                 logger.debug("Nalezena duplicitní zpráva s MIC: {}".format(mic))
                             else:
-                                print('ok')
                                 zpracovana_data['gateway'] = gateway
                                 zpracovana_data['typ_zpravy_GWMP'] = typ_zpravy
                                 zpracovana_data['verze'] = verze
